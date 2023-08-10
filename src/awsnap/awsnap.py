@@ -4,6 +4,47 @@ import argparse
 import os
 import botocore.exceptions
 import configparser
+import cmd
+
+
+class AWSnapShell(cmd.Cmd):
+    prompt = "(awsnap) "
+
+    def do_open(self, profile):
+        """Open AWS Console with a specific profile"""
+        sso_url = get_sso_url_from_profile(profile)
+        open_aws_console(profile, sso_url)
+
+    def do_login(self, profile):
+        """Authenticate with AWS SSO"""
+        authenticate_sso(profile)
+
+    def do_list(self, args):
+        """List available AWS profiles"""
+        list_profiles()
+
+    def do_exit(self, args):
+        """Exit the interactive shell"""
+        return True
+
+    def default(self, args):
+        print(f"Unknown command: {args} (type 'help' for available commands)")
+
+
+def list_profiles():
+    config_path = os.path.expanduser("~/.aws/config")
+    config = configparser.ConfigParser()
+    config.read(config_path)
+
+    profiles = [
+        section.replace("profile ", "")
+        for section in config.sections()
+        if section.startswith("profile ")
+    ]
+
+    print("Available Profiles:")
+    for profile in profiles:
+        print(f"  - {profile}")
 
 
 def open_aws_console(profile, sso_url):
@@ -47,13 +88,27 @@ def get_sso_url_from_profile(profile):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Open AWS Console with Profile"
+        description="AWSnap: Open AWS Console with Profile or Enter Interactive Mode"
     )
-    parser.add_argument("--profile", required=True, help="AWS profile name")
+    parser.add_argument("-p", "--profile", help="AWS profile name")
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        help="Enter interactive mode",
+    )
+
     args = parser.parse_args()
 
-    sso_url = get_sso_url_from_profile(args.profile)
-    open_aws_console(args.profile, sso_url)
+    if args.interactive:
+        AWSnapShell().cmdloop()
+    elif args.profile:
+        sso_url = get_sso_url_from_profile(args.profile)
+        open_aws_console(args.profile, sso_url)
+    else:
+        print(
+            "Usage: Provide a profile (-p/--profile) or enter interactive mode (-i/--interactive)."
+        )
 
 
 if __name__ == "__main__":
