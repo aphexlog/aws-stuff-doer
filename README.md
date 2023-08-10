@@ -26,7 +26,7 @@ Getting started with AWSnap is easy:
 awsnap <your_command_here>
 ```
 
-For detailed usage and available commands, please refer to the [documentation](https://pypi.org/project/awsnap/).
+The project is available on [pypip](https://pypi.org/project/awsnap/).
 
 ## Contributing
 
@@ -43,15 +43,6 @@ Feel free to reach out with questions, suggestions, or just to say hello. Happy 
 ## Contact Information
 - **Author**: Aaron West
 - **Email**: aphexlog@gmail.com
-
-
-## License
-
-AWSnap is released under the [MIT License](link_to_license). For more details, please see the [LICENSE](link_to_license_file) file.
-
-## Contributing
-
-We welcome contributions from the community. If you'd like to contribute, please see our [CONTRIBUTING.md](link_to_contributing_guide) for guidelines.
 
 ---
 
