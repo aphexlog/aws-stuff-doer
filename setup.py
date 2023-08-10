@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="awsnap",
-    version="0.1",
+    version="0.2",
     description="AWS SSO Utility",
     author="Aaron West",
     author_email="aphexlog@gmail.com",
