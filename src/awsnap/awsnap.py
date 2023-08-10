@@ -3,6 +3,7 @@ import webbrowser
 import argparse
 import os
 import botocore.exceptions
+import configparser
 
 
 def open_aws_console(profile, sso_url):
@@ -34,12 +35,26 @@ def authenticate_sso(profile):
     os.system(f"aws sso login --profile {profile}")
 
 
-if __name__ == "__main__":
+def get_sso_url_from_profile(profile):
+    config = configparser.ConfigParser()
+    config.read(f"{os.path.expanduser('~')}/.aws/config")
+
+    sso_session = config.get(f"profile {profile}", "sso_session")
+    sso_start_url = config.get(f"sso-session {sso_session}", "sso_start_url")
+
+    return sso_start_url
+
+
+def main():
     parser = argparse.ArgumentParser(
         description="Open AWS Console with Profile"
     )
     parser.add_argument("--profile", required=True, help="AWS profile name")
     args = parser.parse_args()
 
-    sso_url = "https://aphexlog.awsapps.com/start#/"
+    sso_url = get_sso_url_from_profile(args.profile)
     open_aws_console(args.profile, sso_url)
+
+
+if __name__ == "__main__":
+    main()
