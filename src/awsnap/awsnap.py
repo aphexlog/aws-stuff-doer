@@ -86,29 +86,59 @@ def get_sso_url_from_profile(profile):
     return sso_start_url
 
 
+def export_temporary_aws_credentials(profile):
+    session = boto3.Session(profile_name=profile)
+
+    # Fetch temporary credentials
+    credentials = session.get_credentials()
+    access_key = credentials.access_key
+    secret_key = credentials.secret_key
+    session_token = credentials.token
+
+    # Export them as environment variables
+    os.environ["AWS_ACCESS_KEY_ID"] = access_key
+    os.environ["AWS_SECRET_ACCESS_KEY"] = secret_key
+    os.environ["AWS_SESSION_TOKEN"] = session_token
+
+
+def run_shell_command(profile, command):
+    # Export temporary AWS credentials for the profile
+    export_temporary_aws_credentials(profile)
+
+    # Run the command
+    print(f"Running command for profile {profile}: {command}")
+    os.system(command)
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="AWSnap: Open AWS Console with Profile or Enter Interactive Mode"
+        description="AWSnap: Open AWS Console with Profile or Enter Interactive Mode or Run a Custom Shell Command"
     )
-    parser.add_argument("-p", "--profile", help="AWS profile name")
+    parser.add_argument(
+        "-p", "--profile", help="AWS profile name", required=True
+    )
     parser.add_argument(
         "-i",
         "--interactive",
         action="store_true",
         help="Enter interactive mode",
     )
+    parser.add_argument(
+        "command",
+        nargs="*",
+        help="Command followed by its arguments to run in the shell",
+    )
 
     args = parser.parse_args()
 
     if args.interactive:
         AWSnapShell().cmdloop()
-    elif args.profile:
+    elif args.command:
+        shell_command = " ".join(args.command)
+        run_shell_command(args.profile, shell_command)
+    else:
         sso_url = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
-    else:
-        print(
-            "Usage: Provide a profile (-p/--profile) or enter interactive mode (-i/--interactive)."
-        )
 
 
 if __name__ == "__main__":
