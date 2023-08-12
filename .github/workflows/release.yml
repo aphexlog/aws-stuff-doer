@@ -1,4 +1,4 @@
-name: Create Release (python)
+name: Create Release
 
 on:
     push:

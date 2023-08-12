@@ -1,6 +1,5 @@
 # AWSnap: AWS SSO Utility
 
-[![PyPI Release Status](https://github.com/aphexlog/AWSnap/actions/workflows/workflow.yml/badge.svg)](https://github.com/aphexlog/AWSnap/actions/workflows/workflow.yml)
 [![PyPI version](https://badge.fury.io/py/awsnap.svg)](https://badge.fury.io/py/awsnap)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
