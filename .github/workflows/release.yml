@@ -21,7 +21,7 @@ jobs:
       run: git tag v${{ env.NEW_VERSION }} && git push origin v${{ env.NEW_VERSION }}
       if: success() # This step will only run if previous steps are successful and the tag does not exist
     - name: Create GitHub Release
-      uses: gh-actions/github-release@v1
+      uses: actions/github-release@v1
       with:
         tag_name: v${{ env.NEW_VERSION }}
         release_name: Release v${{ env.NEW_VERSION }}
