@@ -1,3 +1,4 @@
+from pathlib import Path
 import boto3
 import webbrowser
 import argparse
@@ -7,14 +8,28 @@ import configparser
 import cmd
 import logging
 
+# Logging configuration
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+
 
 class AWSnapShell(cmd.Cmd):
     prompt = "(awsnap) "
 
     def do_open(self, profile):
         """Open AWS Console with a specific profile"""
-        sso_url = get_sso_url_from_profile(profile)
-        open_aws_console(profile, sso_url)
+        try:
+            sso_url = get_sso_url_from_profile(profile)
+            open_aws_console(profile, sso_url)
+            logging.info(
+                f"Successfully opened AWS console for profile {profile}"
+            )
+        except Exception as e:
+            logging.error(
+                f"Failed to open AWS console for profile {profile}: {str(e)}"
+            )
 
     def do_login(self, profile):
         """Authenticate with AWS SSO"""
@@ -33,7 +48,7 @@ class AWSnapShell(cmd.Cmd):
 
 
 def list_profiles():
-    config_path = os.path.expanduser("~/.aws/config")
+    config_path = Path.home() / ".aws" / "config"
     config = configparser.ConfigParser()
     config.read(config_path)
 
@@ -49,21 +64,26 @@ def list_profiles():
 
 
 def open_aws_console(profile, sso_url):
-    session = boto3.Session(profile_name=profile)
+    try:
+        session = boto3.Session(profile_name=profile)
 
-    # Check if SSO credentials are needed
-    if not sso_credentials_exist(session):
-        authenticate_sso(profile)
         if not sso_credentials_exist(session):
-            raise Exception("SSO authentication failed")
+            authenticate_sso(profile)
+            if not sso_credentials_exist(session):
+                raise Exception("SSO authentication failed")
 
-    # Open the URL with the obtained credentials
-    webbrowser.open(sso_url)
+        webbrowser.open(sso_url)
+        logging.info(f"Opened AWS console for profile {profile}")
+
+    except Exception as e:
+        logging.error(
+            f"Failed to open AWS console for profile {profile}: {str(e)}"
+        )
+        raise
 
 
 def sso_credentials_exist(session):
     try:
-        # This call will raise an exception if the credentials are not available
         session.client("sts").get_caller_identity()
         return True
     except (
@@ -76,29 +96,26 @@ def sso_credentials_exist(session):
 def authenticate_sso(profile):
     try:
         client = boto3.client(
-            "sso", region_name="region-name", profile_name=profile
+            "sso",
+            profile_name=profile,
         )
 
-        # Assuming you have obtained the SSO Start URL
         sso_start_url = get_sso_url_from_profile(profile)
 
-        # Ensure the SSO Start URL is valid
         if not sso_start_url:
-            logging.error(
-                "Failed to obtain SSO Start URL for profile %s", profile
+            raise ValueError(
+                f"Failed to obtain SSO Start URL for profile {profile}"
             )
-            return False
 
         client.start_sso_login(ssoStartUrl=sso_start_url)
+        logging.info(f"Successfully authenticated SSO for profile {profile}")
         return True
 
     except Exception as e:
         logging.error(
-            "An error occurred during SSO authentication for profile %s: %s",
-            profile,
-            str(e),
+            f"An error occurred during SSO authentication for profile {profile}: {str(e)}",
         )
-        return False
+        raise  # Raising exception to handle it at a higher level if needed
 
 
 def get_sso_url_from_profile(profile):
@@ -113,35 +130,27 @@ def get_sso_url_from_profile(profile):
 
 def export_temporary_aws_credentials(profile):
     session = boto3.Session(profile_name=profile)
-
-    # Fetch temporary credentials
     credentials = session.get_credentials()
     access_key = credentials.access_key
     secret_key = credentials.secret_key
     session_token = credentials.token
 
-    # Export them as environment variables
     os.environ["AWS_ACCESS_KEY_ID"] = access_key
     os.environ["AWS_SECRET_ACCESS_KEY"] = secret_key
     os.environ["AWS_SESSION_TOKEN"] = session_token
 
 
 def run_shell_command(profile, command):
-    # Export temporary AWS credentials for the profile
     export_temporary_aws_credentials(profile)
-
-    # Run the command
     print(f"Running command for profile {profile}: {command}")
     os.system(command)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="AWSnap: Open AWS Console with Profile or Enter Interactive Mode or Run a Custom Shell Command"
+        description="AWSnap: AWS SSO Utility",
     )
-    parser.add_argument(
-        "-p", "--profile", help="AWS profile name", required=True
-    )
+    parser.add_argument("-p", "--profile", help="AWS profile name")
     parser.add_argument(
         "-i",
         "--interactive",
