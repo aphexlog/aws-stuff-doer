@@ -1,32 +1,21 @@
-name: Create Tag and Release
+name: Create Release (python)
 
 on:
-  push:
-    paths:
-      - 'setup.py'
-    branches:
-      - main
+    push:
+        tags:
+        - 'v*'
 
 jobs:
-  check_version_and_release:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Get version from setup.py
-      run: echo "NEW_VERSION=$(python setup.py --version)" >> $GITHUB_ENV
-    - name: Check if tag already exists
-      run: git fetch --depth=1 origin refs/tags/v${{ env.NEW_VERSION }}*
-    - name: Create new tag
-      run: git tag v${{ env.NEW_VERSION }} && git push origin v${{ env.NEW_VERSION }}
-      if: success() # This step will only run if previous steps are successful and the tag does not exist
-    - name: Create GitHub Release
-      uses: actions/github-release@v1
-      with:
-        tag_name: v${{ env.NEW_VERSION }}
-        release_name: Release v${{ env.NEW_VERSION }}
-        body: Release notes for v${{ env.NEW_VERSION }}
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v2
+        - name: Create Release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: ${{ github.ref }} # Simply using the ref as the release name
+            draft: false
+            prerelease: false
