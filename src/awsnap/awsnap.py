@@ -5,6 +5,7 @@ import os
 import botocore.exceptions
 import configparser
 import cmd
+import logging
 
 
 class AWSnapShell(cmd.Cmd):
@@ -73,7 +74,31 @@ def sso_credentials_exist(session):
 
 
 def authenticate_sso(profile):
-    os.system(f"aws sso login --profile {profile}")
+    try:
+        client = boto3.client(
+            "sso", region_name="region-name", profile_name=profile
+        )
+
+        # Assuming you have obtained the SSO Start URL
+        sso_start_url = get_sso_url_from_profile(profile)
+
+        # Ensure the SSO Start URL is valid
+        if not sso_start_url:
+            logging.error(
+                "Failed to obtain SSO Start URL for profile %s", profile
+            )
+            return False
+
+        client.start_sso_login(ssoStartUrl=sso_start_url)
+        return True
+
+    except Exception as e:
+        logging.error(
+            "An error occurred during SSO authentication for profile %s: %s",
+            profile,
+            str(e),
+        )
+        return False
 
 
 def get_sso_url_from_profile(profile):
