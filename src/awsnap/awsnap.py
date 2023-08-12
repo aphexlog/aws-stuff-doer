@@ -2,6 +2,7 @@ from pathlib import Path
 import boto3
 import webbrowser
 import argparse
+import subprocess
 import os
 import botocore.exceptions
 import configparser
@@ -95,11 +96,6 @@ def sso_credentials_exist(session):
 
 def authenticate_sso(profile):
     try:
-        client = boto3.client(
-            "sso",
-            profile_name=profile,
-        )
-
         sso_start_url = get_sso_url_from_profile(profile)
 
         if not sso_start_url:
@@ -107,13 +103,21 @@ def authenticate_sso(profile):
                 f"Failed to obtain SSO Start URL for profile {profile}"
             )
 
-        client.start_sso_login(ssoStartUrl=sso_start_url)
+        # Execute the AWS CLI command for SSO login
+        command = ["aws", "sso", "login", "--profile", profile]
+        subprocess.run(command, check=True)
+
         logging.info(f"Successfully authenticated SSO for profile {profile}")
         return True
 
+    except subprocess.CalledProcessError as e:
+        logging.error(
+            f"An error occurred during SSO authentication for profile {profile}: {str(e)}"
+        )
+        raise  # Raising exception to handle it at a higher level if needed
     except Exception as e:
         logging.error(
-            f"An error occurred during SSO authentication for profile {profile}: {str(e)}",
+            f"An error occurred during SSO authentication for profile {profile}: {str(e)}"
         )
         raise  # Raising exception to handle it at a higher level if needed
 
