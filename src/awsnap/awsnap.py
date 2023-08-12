@@ -65,8 +65,14 @@ def list_profiles():
 
 
 def open_aws_console(profile, sso_url):
+    sso_url, region = get_sso_url_from_profile(profile)
     try:
-        session = boto3.Session(profile_name=profile)
+        # Create the session with the region if available
+        session = (
+            boto3.Session(profile_name=profile, region_name=region)
+            if region
+            else boto3.Session(profile_name=profile)
+        )
 
         if not sso_credentials_exist(session):
             authenticate_sso(profile)
@@ -128,8 +134,11 @@ def get_sso_url_from_profile(profile):
 
     sso_session = config.get(f"profile {profile}", "sso_session")
     sso_start_url = config.get(f"sso-session {sso_session}", "sso_start_url")
+    region = config.get(
+        f"profile {profile}", "region", fallback=None
+    )  # Fetching the region
 
-    return sso_start_url
+    return sso_start_url, region
 
 
 def export_temporary_aws_credentials(profile):
