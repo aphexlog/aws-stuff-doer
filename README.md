@@ -25,14 +25,24 @@ pip install awsnap
 
 Getting started with AWSnap is easy:
 
+To generate temporary AWS credentials for a specific profile:
+```bash
+awsnap -p <profile_name>
+```
+This will generate temporary AWS credentials for the specified profile and store them in the ~/.aws/credentials file.
+
 To open your AWS console in a browser session:
 ```bash
-awsnap <your_command_here>
+awsnap <your_command_here> --profile <profile_name> --console
 ```
 
-To run a custom command with a specific profile:
+To get help:
 ```bash
-awsnap --profile <your_profile_here> <your_command_here>
+awsnap --help
+```
+or
+```bash
+go see a therapist.
 ```
 
 The project is available on [pypip](https://pypi.org/project/awsnap/).
