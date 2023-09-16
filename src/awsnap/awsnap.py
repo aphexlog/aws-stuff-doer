@@ -170,10 +170,10 @@ def export_temporary_aws_credentials(profile):
     )
 
 
-# def run_shell_command(profile, command):
-#     export_temporary_aws_credentials(profile)
-#     print(f"Running command for profile {profile}: {command}")
-#     os.system(command)
+def run_shell_command(profile, command):
+    export_temporary_aws_credentials(profile)
+    print(f"Running command for profile {profile}: {command}")
+    os.system(command)
 
 
 def main():
@@ -191,6 +191,11 @@ def main():
         help="Enter interactive mode",
     )
     parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List available profiles",
+    )
+    parser.add_argument(
         "command",
         nargs="*",
         help="Command followed by its arguments to run in the shell",
@@ -200,9 +205,11 @@ def main():
 
     if args.interactive:
         AWSnapShell().cmdloop()
-    # elif args.command:
-    #     shell_command = " ".join(args.command)
-    #     run_shell_command(args.profile, shell_command)
+    elif args.command:
+        shell_command = " ".join(args.command)
+        run_shell_command(args.profile, shell_command)
+    elif args.list:
+        list_profiles()
     elif args.console:  # Open console when --console flag is used
         sso_url, _ = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
