@@ -41,5 +41,5 @@ jobs:
       - name: Create Tag
         if: ${{ steps.get_version.outputs.version != github.ref }}
         run: |
-          git tag -a ${{ steps.get_version.outputs.version }} -m "Version ${{ steps.get_version.outputs.version }}"
-          git push origin ${{ steps.get_version.outputs.version }}
+          git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
+          git push origin v${{ env.VERSION }}
