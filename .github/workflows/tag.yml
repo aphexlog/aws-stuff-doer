@@ -3,7 +3,7 @@ name: Create Tag on Version Change
 on:
   push:
     branches:
-      - main  # replace with your default branch if not 'main'
+      - main
 
 jobs:
   tag:
@@ -18,13 +18,10 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Dependencies
-        run: pip install setuptools
-
       - name: Get Package Version
         id: package-version
         run: |
-          version=$(python -c "exec(open('setup.py').read()); print(version)")
+          version=$(grep "version=" setup.py | sed "s/version=['\"]\([^'\"]*\)['\"]/\1/")
           echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
           echo "::set-output name=version::$version"
 
