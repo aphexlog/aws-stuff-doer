@@ -1,8 +1,3 @@
-# create a tag on version change
-# version changes are detected by the version in the setup.py file
-# the tag is created with the version number and the commit message example: v1.0.0 - initial commit
-# the tag is pushed to the repository
-
 name: Create Tag on Version Change
 
 on:
@@ -36,11 +31,12 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          echo ::set-env name=VERSION::$(python setup.py --version)
-          echo ::set-output name=version::$(python setup.py --version)
+          version=$(python setup.py --version)
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "version=$version" >> $GITHUB_ENV
 
       - name: Create Tag
         if: ${{ steps.get_version.outputs.version != github.ref }}
         run: |
-          git tag -a v${{ steps.get_version.outputs.version }} -m "v${{ steps.get_version.outputs.version }} - ${{ github.event.head_commit.message }}"
-          git push origin v${{ steps.get_version.outputs.version }}
+          git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
+          git push origin v${{ env.VERSION }}
