@@ -41,5 +41,10 @@ jobs:
       - name: Create Tag
         if: ${{ steps.get_version.outputs.version != github.ref }}
         run: |
-          git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
-          git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }} v${{ env.VERSION }}
+          if ! git tag --list | grep -q "v${{ env.VERSION }}"; then
+            git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
+            git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }} v${{ env.VERSION }}
+          else
+            echo "Tag v${{ env.VERSION }} already exists, skipping."
+          fi
+        
