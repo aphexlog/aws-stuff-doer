@@ -191,6 +191,7 @@ def main():
         help="Enter interactive mode",
     )
     parser.add_argument(
+        "-l",
         "--list",
         action="store_true",
         help="List available profiles",
