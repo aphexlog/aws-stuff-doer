@@ -43,7 +43,7 @@ jobs:
         run: |
           if [ -z "${{ env.VERSION }}" ]; then
             echo "VERSION is not set"
-            exit 1
+            exit 0
           fi
           git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
           git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }} v${{ env.VERSION }}
