@@ -207,6 +207,12 @@ def main():
         sso_url, _ = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
     elif args.profile:  # Export credentials when --profile flag is used
+        session = boto3.Session(profile_name=args.profile)
+
+        if not sso_credentials_exist(session):
+            logging.info("SSO credentials expired. Initiating SSO login.")
+            authenticate_sso(args.profile)
+
         export_temporary_aws_credentials(args.profile)
     else:
         parser.print_help()
