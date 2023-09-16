@@ -28,21 +28,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # set user name and email
       - name: Set Git User
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
-      - name: Create Tag
-        id: create_tag
+      - name: Get Version
+        id: get_version
         run: |
-          python create_tag.py
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "::set-output name=version::$(python get_version.py)"
 
-      - name: Push Tag
-        if: steps.create_tag.outputs.tag_created == 'true'
+      - name: Create Tag
+        if: steps.get_version.outputs.version != ''
         run: |
-          git push origin ${{ steps.create_tag.outputs.tag }}
+          git tag -a v${{ steps.get_version.outputs.version }} -m "v${{ steps.get_version.outputs.version }} - initial commit"
+          git push origin v${{ steps.get_version.outputs.version }}
 
