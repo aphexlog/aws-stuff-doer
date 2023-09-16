@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -21,11 +23,13 @@ jobs:
       - name: Get Package Version
         id: package-version
         run: |
-          version=$(grep "version=" setup.py | sed "s/version=['\"]\([^'\"]*\)['\"]/\1/")
+          version=$(grep "version=" setup.py | sed "s/version=['\"]\([^'\"]*\)['\"]/\1/" | tr -d '[:space:],')
           echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
           echo "::set-output name=version::$version"
 
       - name: Create Git Tag
         run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag ${{ steps.package-version.outputs.version }}
           git push origin ${{ steps.package-version.outputs.version }}
