@@ -42,5 +42,4 @@ jobs:
         if: ${{ steps.get_version.outputs.version != github.ref }}
         run: |
           git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
-          git push https://${{ secrets.REPO_TOKEN }}@${{ github.server_url }}/${{ github.repository }} HEAD:${{ github.ref }} --tags
-				
+          git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }} v${{ env.VERSION }}
