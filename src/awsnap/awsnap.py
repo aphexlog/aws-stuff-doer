@@ -9,10 +9,10 @@ import configparser
 import cmd
 import logging
 
-# Logging configuration
 logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 
@@ -170,10 +170,10 @@ def export_temporary_aws_credentials(profile):
     )
 
 
-def run_shell_command(profile, command):
-    export_temporary_aws_credentials(profile)
-    print(f"Running command for profile {profile}: {command}")
-    os.system(command)
+# def run_shell_command(profile, command):
+#     export_temporary_aws_credentials(profile)
+#     print(f"Running command for profile {profile}: {command}")
+#     os.system(command)
 
 
 def main():
@@ -200,9 +200,9 @@ def main():
 
     if args.interactive:
         AWSnapShell().cmdloop()
-    elif args.command:
-        shell_command = " ".join(args.command)
-        run_shell_command(args.profile, shell_command)
+    # elif args.command:
+    #     shell_command = " ".join(args.command)
+    #     run_shell_command(args.profile, shell_command)
     elif args.console:  # Open console when --console flag is used
         sso_url, _ = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
