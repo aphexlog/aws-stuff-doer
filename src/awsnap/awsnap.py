@@ -4,6 +4,7 @@ import webbrowser
 import argparse
 import subprocess
 import os
+import sys
 import botocore.exceptions
 import configparser
 import cmd
@@ -15,6 +16,9 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+# Set logging level for botocore to ERROR to suppress stack traces
+logging.getLogger("botocore").setLevel(logging.ERROR)
+
 
 class AWSnapShell(cmd.Cmd):
     prompt = "(awsnap) "
@@ -24,13 +28,9 @@ class AWSnapShell(cmd.Cmd):
         try:
             sso_url = get_sso_url_from_profile(profile)
             open_aws_console(profile, sso_url)
-            logging.info(
-                f"Successfully opened AWS console for profile {profile}"
-            )
+            logging.info(f"Successfully opened AWS console for profile {profile}")
         except Exception as e:
-            logging.error(
-                f"Failed to open AWS console for profile {profile}: {str(e)}"
-            )
+            logging.error(f"Failed to open AWS console for profile {profile}: {str(e)}")
 
     def do_login(self, profile):
         """Authenticate with AWS SSO"""
@@ -82,10 +82,8 @@ def open_aws_console(profile, sso_url):
         webbrowser.open(sso_url)
         logging.info(f"Opened AWS console for profile {profile}")
 
-    except Exception as e:
-        logging.error(
-            f"Failed to open AWS console for profile {profile}: {str(e)}"
-        )
+    except Exception as err:
+        logging.error(f"Failed to open AWS console for profile {profile}: {str(err)}")
         raise
 
 
@@ -102,30 +100,27 @@ def sso_credentials_exist(session):
 
 def authenticate_sso(profile):
     try:
-        sso_start_url = get_sso_url_from_profile(profile)
-
-        if not sso_start_url:
-            raise ValueError(
-                f"Failed to obtain SSO Start URL for profile {profile}"
-            )
-
-        # Execute the AWS CLI command for SSO login
-        command = ["aws", "sso", "login", "--profile", profile]
+        command = [
+            "aws",
+            "sso",
+            "login",
+            "--profile",
+            profile,
+        ]
         subprocess.run(command, check=True)
 
         logging.info(f"Successfully authenticated SSO for profile {profile}")
         return True
-
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError as err:
         logging.error(
-            f"An error occurred during SSO authentication for profile {profile}: {str(e)}"
+            f"An error occurred during SSO authentication for profile {profile}: {err}"  # noqa
         )
-        raise  # Raising exception to handle it at a higher level if needed
-    except Exception as e:
+        return False
+    except Exception as err:
         logging.error(
-            f"An error occurred during SSO authentication for profile {profile}: {str(e)}"
+            f"An error occurred during SSO authentication for profile {profile}: {err}"  # noqa
         )
-        raise  # Raising exception to handle it at a higher level if needed
+        return False
 
 
 def get_sso_url_from_profile(profile):
@@ -142,32 +137,36 @@ def get_sso_url_from_profile(profile):
 
 
 def export_temporary_aws_credentials(profile):
-    session = boto3.Session(profile_name=profile)
-    credentials = session.get_credentials()
-    access_key = credentials.access_key
-    secret_key = credentials.secret_key
-    session_token = credentials.token
+    try:
+        session = boto3.Session(profile_name=profile)
+        credentials = session.get_credentials()
+        access_key = credentials.access_key
+        secret_key = credentials.secret_key
+        session_token = credentials.token
 
-    credentials_path = Path.home() / ".aws" / "credentials"
-    config = configparser.ConfigParser()
+        credentials_path = Path.home() / ".aws" / "credentials"
+        config = configparser.ConfigParser()
 
-    # Read existing credentials if they exist
-    if credentials_path.exists():
-        config.read(credentials_path)
+        # Read existing credentials if they exist
+        if credentials_path.exists():
+            config.read(credentials_path)
 
-    if "default" not in config.sections():
-        config.add_section("default")
+        if "default" not in config.sections():
+            config.add_section("default")
 
-    config.set("default", "aws_access_key_id", access_key)
-    config.set("default", "aws_secret_access_key", secret_key)
-    config.set("default", "aws_session_token", session_token)
+        config.set("default", "aws_access_key_id", access_key)
+        config.set("default", "aws_secret_access_key", secret_key)
+        config.set("default", "aws_session_token", session_token)
 
-    with open(credentials_path, "w") as f:
-        config.write(f)
+        with open(credentials_path, "w") as f:
+            config.write(f)
 
-    logging.info(
-        "Temporary AWS credentials have been written to the default profile in ~/.aws/credentials"
-    )
+        logging.info(
+            "Temporary AWS credentials have been written to the default profile in ~/.aws/credentials"  # noqa
+        )
+    except Exception as err:
+        logging.error(f"Failed to export temporary AWS credentials: {err}")
+        return False
 
 
 def run_shell_command(profile, command):
@@ -183,7 +182,7 @@ def main():
     parser.add_argument("-p", "--profile", help="AWS profile name")
     parser.add_argument(
         "--console", action="store_true", help="Open AWS console"
-    )
+    )  # noqa
     parser.add_argument(
         "-i",
         "--interactive",
@@ -219,9 +218,15 @@ def main():
 
         if not sso_credentials_exist(session):
             logging.info("SSO credentials expired. Initiating SSO login.")
-            authenticate_sso(args.profile)
+            if not authenticate_sso(args.profile):
+                print(
+                    "Failed to authenticate with SSO. Please check your credentials and try again."  # noqa
+                )
+                sys.exit(1)
 
-        export_temporary_aws_credentials(args.profile)
+        if not export_temporary_aws_credentials(args.profile):
+            print("Failed to export temporary AWS credentials.")
+            sys.exit(1)
     else:
         parser.print_help()
 
