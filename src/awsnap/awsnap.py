@@ -164,6 +164,7 @@ def export_temporary_aws_credentials(profile):
         logging.info(
             "Temporary AWS credentials have been written to the default profile in ~/.aws/credentials"  # noqa
         )
+        return True  # Ensure to return True after successful execution
     except Exception as err:
         logging.error(f"Failed to export temporary AWS credentials: {err}")
         return False
