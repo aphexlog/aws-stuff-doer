@@ -3,12 +3,15 @@ import json
 import logging
 from aws_cdk import App
 import time
+from botocore.exceptions import ClientError
 from .synth import PipelineStack
 
 logging.basicConfig(level=logging.INFO)
 
 
-def create_pipeline(repo_string, branch="main", build_commands=None):
+def create_pipeline(
+    stack_name, repo_string, branch="main", build_commands=None
+):  # noqa: E501
     logging.info(
         f"Starting pipeline creation: {repo_string}, {branch}, {build_commands}"  # noqa: E501
     )
@@ -16,7 +19,8 @@ def create_pipeline(repo_string, branch="main", build_commands=None):
     app = App()
     stack = PipelineStack(
         app,
-        "MyPipelineStack",
+        "PipelineStack",
+        stack_name=stack_name,
         repo_string=repo_string,
         branch=branch,
         build_commands=build_commands,
@@ -63,6 +67,8 @@ def create_pipeline(repo_string, branch="main", build_commands=None):
 def delete_pipeline(stack_name):
     logging.info(f"Starting pipeline deletion: {stack_name}")
 
+    region = "us-east-1"
+
     cloudformation_client = boto3.client(
         "cloudformation", region_name="us-east-1"
     )  # noqa: E501
@@ -70,6 +76,7 @@ def delete_pipeline(stack_name):
     try:
         cloudformation_client.delete_stack(StackName=stack_name)
         logging.info(f"Stack deletion initiated for {stack_name}")
+        tail_cloudformation_logs(stack_name, region_name=region)
     except Exception as e:
         logging.error(f"Error deleting stack: {e}")
 
@@ -81,9 +88,17 @@ def tail_cloudformation_logs(stack_name, region_name):
     seen_events = set()
 
     while True:
-        # Get the stack events
-        response = client.describe_stack_events(StackName=stack_name)
-        events = response["StackEvents"]
+        try:
+            # Get the stack events
+            response = client.describe_stack_events(StackName=stack_name)
+            events = response["StackEvents"]
+        except ClientError as e:
+            # If the stack no longer exists, break from the loop
+            if "does not exist" in e.response["Error"]["Message"]:
+                logging.info(f"Stack {stack_name} no longer exists.")
+                break
+            else:
+                raise
 
         # Display events in reverse order (newest first) and skip seen events
         for event in reversed(events):
