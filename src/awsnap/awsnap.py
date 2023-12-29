@@ -10,7 +10,7 @@ import botocore.exceptions
 import configparser
 import cmd
 import logging
-from .commands.command_handler import handle_command
+from .pipeline.command_handler import handle_command
 
 # from commands.config_command import handle_config_pipeline
 

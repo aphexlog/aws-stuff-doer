@@ -1,5 +1,5 @@
 # commands/command_handler.py
-from .create_command import create_pipeline
+from .cloudformation import create_pipeline, delete_pipeline
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -13,8 +13,6 @@ def handle_command(arg):
     logging.info(f"Received command: {subcommand}")
 
     if subcommand == "create":
-        # Ensure you are passing the correct number of arguments to create_pipeline
-        # For now, let's assume the repo_string is always "elevator-robot/awsnap" and the branch is "main"
         repo_string = "elevator-robot/awsnap"
         branch = "main"  # Default branch
         build_commands = [
@@ -23,9 +21,13 @@ def handle_command(arg):
             "cdk synth",
         ]  # Default build commands
         logging.info(
-            f"Creating pipeline with args: repo_string={repo_string}, branch={branch}, build_commands={build_commands}"
+            f"Creating pipeline with args: repo_string={repo_string}, branch={branch}, build_commands={build_commands}"  # noqa: E501
         )
         create_pipeline(repo_string, branch, build_commands)
+    elif subcommand == "delete":
+        stack_name = "MyPipelineStack"
+        logging.info(f"Deleting pipeline with args: stack_name={stack_name}")
+        delete_pipeline(stack_name)
     else:
         logging.error(f"Unknown command: {subcommand}")
         raise ValueError(f"Unknown command: {subcommand}")

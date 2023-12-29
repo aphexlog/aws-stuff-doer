@@ -2,7 +2,7 @@ import boto3
 import json
 import logging
 from aws_cdk import App
-from .pipeline_stack import PipelineStack
+from .synth import PipelineStack
 
 logging.basicConfig(level=logging.INFO)
 
@@ -52,3 +52,17 @@ def create_pipeline(repo_string, branch="main", build_commands=None):
         logging.info(f"Stack update initiated for {stack.stack_name}")
     except Exception as e:
         logging.error(f"Error deploying stack: {e}")
+
+
+def delete_pipeline(stack_name):
+    logging.info(f"Starting pipeline deletion: {stack_name}")
+
+    cloudformation_client = boto3.client(
+        "cloudformation", region_name="us-east-1"
+    )  # noqa: E501
+
+    try:
+        cloudformation_client.delete_stack(StackName=stack_name)
+        logging.info(f"Stack deletion initiated for {stack_name}")
+    except Exception as e:
+        logging.error(f"Error deleting stack: {e}")
