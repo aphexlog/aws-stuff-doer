@@ -32,7 +32,7 @@ class PipelineStack(Stack):
                 input=CodePipelineSource.connection(
                     repo_string,
                     branch,
-                    connection_arn=f"arn:aws:codestar-connections:us-east-1:764114738171:connection/{owner}/{repo}",  # noqa: E501
+                    connection_arn=f"arn:aws:codestar-connections:{self.region}:{self.account}:connection/ea715684-208a-4756-ac77-b1ab5acd5dfe",  # noqa: E501
                 ),
                 commands=build_commands,
             ),

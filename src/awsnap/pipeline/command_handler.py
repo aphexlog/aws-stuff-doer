@@ -30,7 +30,7 @@ def handle_command(arg):
 
     logging.info(f"Received command: {subcommand}")
 
-    region = Session().region_name
+    region = Session().region_name or "us-east-1"
     logging.info(f"Using region: {region}")
 
     if subcommand == "create":

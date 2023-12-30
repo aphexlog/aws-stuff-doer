@@ -26,11 +26,6 @@ def create_pipeline(
         f"Starting pipeline creation: {repo_string}, {branch}, {build_commands}"  # noqa: E501
     )
 
-    # Prompt for region if not provided
-    region = region or prompt_for_region()
-    if not region:
-        return  # Exit if no region is provided
-
     app = App()
     stack = PipelineStack(
         app,
@@ -77,7 +72,7 @@ def create_pipeline(
         logging.error(f"Error deploying stack: {e}")
 
 
-def delete_pipeline(stack_name, region):
+def delete_pipeline(stack_name, region=None):
     logging.info(f"Starting pipeline deletion: {stack_name}")
 
     # Prompt for region if not provided
