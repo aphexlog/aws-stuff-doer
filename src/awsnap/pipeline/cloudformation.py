@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def create_pipeline(
-    stack_name, repo_string, branch="main", build_commands=None
+    stack_name, repo_string, branch="main", build_commands=None, region=None
 ):  # noqa: E501
     logging.info(
         f"Starting pipeline creation: {repo_string}, {branch}, {build_commands}"  # noqa: E501
@@ -33,7 +33,18 @@ def create_pipeline(
     # Convert the template to JSON
     template_body = json.dumps(cfn_template)
 
-    region = "us-east-1"
+    # if --region provided in command line, use that. Otherwise, use the AWS_DEFAULT_REGION env var. Otherwise, use prompt the user for a region.  # noqa: E501
+    if region:
+        region = region
+    else:
+        region = boto3.session.Session().region_name
+        if not region:
+            region = input(
+                "Enter the region to deploy the pipeline to: "
+            ).strip()  # noqa: E501
+            if not region:
+                logging.error("Region not provided. Exiting.")
+                return
 
     # Use boto3 to deploy the template
     cloudformation_client = boto3.client(
@@ -64,13 +75,11 @@ def create_pipeline(
         logging.error(f"Error deploying stack: {e}")
 
 
-def delete_pipeline(stack_name):
+def delete_pipeline(stack_name, region=None):
     logging.info(f"Starting pipeline deletion: {stack_name}")
 
-    region = "us-east-1"
-
     cloudformation_client = boto3.client(
-        "cloudformation", region_name="us-east-1"
+        "cloudformation", region_name=region
     )  # noqa: E501
 
     try:
