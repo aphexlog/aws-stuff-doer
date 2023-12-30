@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from aws_cdk import Stack, CfnOutput
+from aws_cdk import Stack, CfnOutput, aws_codestarconnections as codestar
 from aws_cdk.pipelines import CodePipeline, CodePipelineSource, ShellStep
 from constructs import Construct
 
@@ -15,6 +15,13 @@ class PipelineStack(Stack):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        connection = codestar.CfnConnection(
+            self,
+            "Connection",
+            connection_name="awsnap-connection",
+            provider_type="GitHub",  # or "Bitbucket", "GitHubEnterpriseServer"
+        )
 
         build_commands = build_commands or [
             "npm install",
@@ -32,7 +39,7 @@ class PipelineStack(Stack):
                 input=CodePipelineSource.connection(
                     repo_string,
                     branch,
-                    connection_arn=f"arn:aws:codestar-connections:{self.region}:{self.account}:connection/ea715684-208a-4756-ac77-b1ab5acd5dfe",  # noqa: E501
+                    connection_arn=connection.attr_connection_arn,
                 ),
                 commands=build_commands,
             ),
