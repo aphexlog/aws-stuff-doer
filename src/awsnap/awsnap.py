@@ -1,6 +1,7 @@
 from pathlib import Path
 import boto3
 import webbrowser
+
 import argparse
 import subprocess
 import os
@@ -9,6 +10,9 @@ import botocore.exceptions
 import configparser
 import cmd
 import logging
+from .pipeline.command_handler import handle_command
+
+# from commands.config_command import handle_config_pipeline
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,9 +32,13 @@ class AWSnapShell(cmd.Cmd):
         try:
             sso_url = get_sso_url_from_profile(profile)
             open_aws_console(profile, sso_url)
-            logging.info(f"Successfully opened AWS console for profile {profile}")
+            logging.info(
+                f"Successfully opened AWS console for profile {profile}"
+            )  # noqa
         except Exception as e:
-            logging.error(f"Failed to open AWS console for profile {profile}: {str(e)}")
+            logging.error(
+                f"Failed to open AWS console for profile {profile}: {str(e)}"
+            )  # noqa
 
     def do_login(self, profile):
         """Authenticate with AWS SSO"""
@@ -43,6 +51,10 @@ class AWSnapShell(cmd.Cmd):
     def do_exit(self, args):
         """Exit the interactive shell"""
         return True
+
+    def do_pipeline(self, args):
+        """Manage AWSnap pipelines"""
+        handle_command(args)
 
     def default(self, args):
         print(f"Unknown command: {args} (type 'help' for available commands)")
@@ -83,7 +95,9 @@ def open_aws_console(profile, sso_url):
         logging.info(f"Opened AWS console for profile {profile}")
 
     except Exception as err:
-        logging.error(f"Failed to open AWS console for profile {profile}: {str(err)}")
+        logging.error(
+            f"Failed to open AWS console for profile {profile}: {str(err)}"
+        )  # noqa
         raise
 
 
@@ -176,6 +190,14 @@ def run_shell_command(profile, command):
     os.system(command)
 
 
+def get_version():
+    # Get the version from the setup.py file
+    with open("setup.py", "r", encoding="utf-8") as fh:
+        for line in fh:
+            if "version=" in line:
+                return line.split('"')[1]
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="AWSnap: AWS SSO Utility",
@@ -201,6 +223,15 @@ def main():
         nargs="*",
         help="Command followed by its arguments to run in the shell",
     )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s " + get_version(),
+    )
+    parser.add_argument(
+        "--pipeline",
+        help="Manage AWSnap pipelines",
+    )
 
     args = parser.parse_args()
 
@@ -214,6 +245,8 @@ def main():
     elif args.console:  # Open console when --console flag is used
         sso_url, _ = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
+    elif args.pipeline:
+        handle_command(args.pipeline)
     elif args.profile:  # Export credentials when --profile flag is used
         session = boto3.Session(profile_name=args.profile)
 
