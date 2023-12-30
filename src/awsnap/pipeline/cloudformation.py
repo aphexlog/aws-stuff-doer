@@ -7,12 +7,29 @@ from .synth import PipelineStack
 import logging
 
 
+def prompt_for_region():
+    region = boto3.session.Session().region_name
+    if not region:
+        region = input(
+            "Enter the region to deploy the pipeline to: "
+        ).strip()  # noqa: E501
+        if not region:
+            logging.error("Region not provided. Exiting.")
+            return
+    return region
+
+
 def create_pipeline(
-    stack_name, repo_string, branch="main", build_commands=None, region=None
+    stack_name, repo_string, branch, build_commands, region=None
 ):  # noqa: E501
     logging.info(
         f"Starting pipeline creation: {repo_string}, {branch}, {build_commands}"  # noqa: E501
     )
+
+    # Prompt for region if not provided
+    region = region or prompt_for_region()
+    if not region:
+        return  # Exit if no region is provided
 
     app = App()
     stack = PipelineStack(
@@ -30,19 +47,6 @@ def create_pipeline(
 
     # Convert the template to JSON
     template_body = json.dumps(cfn_template)
-
-    # if --region provided in command line, use that. Otherwise, use the AWS_DEFAULT_REGION env var. Otherwise, use prompt the user for a region.  # noqa: E501
-    if region:
-        region = region
-    else:
-        region = boto3.session.Session().region_name
-        if not region:
-            region = input(
-                "Enter the region to deploy the pipeline to: "
-            ).strip()  # noqa: E501
-            if not region:
-                logging.error("Region not provided. Exiting.")
-                return
 
     # Use boto3 to deploy the template
     cloudformation_client = boto3.client(
@@ -73,8 +77,13 @@ def create_pipeline(
         logging.error(f"Error deploying stack: {e}")
 
 
-def delete_pipeline(stack_name, region=None):
+def delete_pipeline(stack_name, region):
     logging.info(f"Starting pipeline deletion: {stack_name}")
+
+    # Prompt for region if not provided
+    region = region or prompt_for_region()
+    if not region:
+        return  # Exit if no region is provided
 
     cloudformation_client = boto3.client(
         "cloudformation", region_name=region
@@ -118,9 +127,13 @@ def tail_cloudformation_logs(stack_name, region_name):
                 resource_type = event["ResourceType"]
                 logical_id = event["LogicalResourceId"]
                 status = event["ResourceStatus"]
-                reason = event.get("ResourceStatusReason", "")
+                reason = (
+                    f" - Reason: {event['ResourceStatusReason']}"
+                    if "ResourceStatusReason" in event
+                    else ""
+                )  # noqa: E501
                 logging.info(
-                    f"{timestamp} - {resource_type} - {logical_id} - {status} - {reason}"  # noqa: E501
+                    f"{timestamp} - {resource_type} - {logical_id} - {status}{reason}"  # noqa: E501
                 )
 
         # Check if the stack creation or update is complete
