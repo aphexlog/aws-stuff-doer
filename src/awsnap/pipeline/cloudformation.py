@@ -1,12 +1,10 @@
 import boto3
 import json
-import logging
 from aws_cdk import App
 import time
 from botocore.exceptions import ClientError
 from .synth import PipelineStack
-
-logging.basicConfig(level=logging.INFO)
+import logging
 
 
 def create_pipeline(

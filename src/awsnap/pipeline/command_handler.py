@@ -1,10 +1,9 @@
 import hashlib
-import logging
 from git import Repo, InvalidGitRepositoryError
 from .cloudformation import create_pipeline, delete_pipeline
-import boto3
+from boto3 import Session
 
-logging.basicConfig(level=logging.INFO)
+import logging
 
 
 def get_git_repo_info():
@@ -31,8 +30,8 @@ def handle_command(arg):
 
     logging.info(f"Received command: {subcommand}")
 
-    region = boto3.session.Session().region_name
-    print(f"Using region: {region}")
+    region = Session().region_name
+    logging.info(f"Using region: {region}")
 
     if subcommand == "create":
         repo_url, branch = get_git_repo_info()
@@ -62,7 +61,7 @@ def handle_command(arg):
         )
 
     elif subcommand == "delete":
-        print(f"Deleting pipeline in region {region}")
+        logging.info("Deleting pipeline")
         # For delete, use the generated pipeline name
         repo_path = Repo(search_parent_directories=True).working_tree_dir
         pipeline_name = generate_pipeline_name(repo_path)
