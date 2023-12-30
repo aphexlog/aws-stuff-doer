@@ -58,6 +58,19 @@ def create_pipeline(
         )
         logging.info(f"Stack creation initiated for {stack.stack_name}")
         tail_cloudformation_logs(stack.stack_name, region)
+
+        codestar_client = boto3.client(
+            "codestar-connections", region_name=region
+        )  # noqa: E501
+        connection_status = codestar_client.get_connection(
+            ConnectionArn="arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90"  # noqa: E501
+        )
+        if connection_status["Connection"]["ConnectionStatus"] == "PENDING":
+            print_activation_instructions(
+                "awsnap-connection",
+                "arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90",  # noqa: E501
+            )
+
     except cloudformation_client.exceptions.AlreadyExistsException:
         # If the stack already exists, update it
         cloudformation_client.update_stack(
@@ -87,15 +100,15 @@ def delete_pipeline(stack_name, region=None):
     try:
         cloudformation_client.delete_stack(StackName=stack_name)
         logging.info(f"Stack deletion initiated for {stack_name}")
-        tail_cloudformation_logs(stack_name, region_name=region)
+        tail_cloudformation_logs(stack_name, region=region)
     except Exception as e:
         logging.error(f"Error deleting stack: {e}")
 
 
-def tail_cloudformation_logs(stack_name, region_name):
+def tail_cloudformation_logs(stack_name, region=None):
     logging.info(f"Tailing logs for CloudFormation stack: {stack_name}")
 
-    client = boto3.client("cloudformation", region_name=region_name)
+    client = boto3.client("cloudformation", region_name=region)
     seen_events = set()
 
     while True:
@@ -135,6 +148,11 @@ def tail_cloudformation_logs(stack_name, region_name):
         stack_description = client.describe_stacks(StackName=stack_name)
         stack_status = stack_description["Stacks"][0]["StackStatus"]
         if "COMPLETE" in stack_status or "FAILED" in stack_status:
+            print_activation_instructions(
+                "awsnap-connection",
+                "arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90",  # noqa: E501
+                region=region,
+            )
             break
 
         # Sleep for some time before polling again
@@ -143,3 +161,28 @@ def tail_cloudformation_logs(stack_name, region_name):
     logging.info(
         f"Finished tailing logs for CloudFormation stack: {stack_name}"
     )  # noqa: E501
+
+
+def print_activation_instructions(
+    connection_name, connection_arn, region=None
+):  # noqa: E501
+    console_url = (
+        # "https://console.aws.amazon.com/codesuite/settings/connections"  # noqa: E501
+        f"https://{region}.console.aws.amazon.com/codesuite/settings/connections"  # noqa: E501
+    )
+    instructions = (
+        f"To activate the CodeStar connection, please follow these steps:\n"
+        f"1. Visit the AWS CodeStar Connections page: {console_url}\n"
+        f"2. Find the connection named '{connection_name}' or use this ARN: {connection_arn}\n"  # noqa: E501
+        f"3. Click on the connection to open its details.\n"
+        f"4. Click the 'Connect' button and follow the prompts to complete the GitHub OAuth flow."  # noqa: E501
+    )
+    print(instructions)
+
+
+# Call the function with the connection details
+# print_activation_instructions(
+#     "awsnap-connection",
+#     "arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90",  # noqa: E501
+#     region="us-east-1",
+# )

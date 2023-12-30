@@ -29,6 +29,7 @@ class PipelineStack(Stack):
             "cdk synth",
         ]  # noqa: E501
 
+        repo_string = repo_string.split(":")[1]
         owner, repo = repo_string.split("/")
 
         CodePipeline(
