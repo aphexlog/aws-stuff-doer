@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-from aws_cdk import Stack, CfnOutput, aws_codestarconnections as codestar
+from aws_cdk import (
+    Stack,
+    CfnOutput,
+    aws_codestarconnections as codestar,
+)
 from aws_cdk.pipelines import CodePipeline, CodePipelineSource, ShellStep
+
 from constructs import Construct
 
 
@@ -23,28 +28,35 @@ class PipelineStack(Stack):
             provider_type="GitHub",  # or "Bitbucket", "GitHubEnterpriseServer"
         )
 
+        install_commands = [
+            "npm install -g aws-cdk",
+            "pip install -r requirements.txt",
+        ]
+
         build_commands = build_commands or [
-            "npm install",
-            "npm run build",
             "cdk synth",
-        ]  # noqa: E501
+        ]
 
         repo_string = repo_string.split(":")[1]
         owner, repo = repo_string.split("/")
 
-        CodePipeline(
+        pipeline = CodePipeline(
             self,
             "Pipeline",
             synth=ShellStep(
                 "Synth",
+                install_commands=install_commands,
                 input=CodePipelineSource.connection(
                     repo_string,
                     branch,
                     connection_arn=connection.attr_connection_arn,
+                    trigger_on_push=False,
                 ),
                 commands=build_commands,
             ),
-            self_mutation=True,
+            self_mutation=False,
         )
+
+        pipeline.node.add_dependency(connection)
 
         CfnOutput(self, "PipelineStackOutput", value="PipelineStack")
