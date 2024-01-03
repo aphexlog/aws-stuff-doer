@@ -186,11 +186,10 @@ def export_temporary_aws_credentials(profile):
         config = configparser.ConfigParser()
 
         # Read existing credentials if they exist, else create the file
-        if credentials_path.exists():
-            config.read(credentials_path)
-        else:
+        if not credentials_path.exists():
             credentials_path.touch()
-            config.read(credentials_path)
+
+        config.read(credentials_path)
 
         if "default" not in config.sections():
             config.add_section("default")
