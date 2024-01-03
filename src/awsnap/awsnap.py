@@ -223,11 +223,11 @@ def main():
         nargs="*",
         help="Command followed by its arguments to run in the shell",
     )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s " + get_version(),
-    )
+    # parser.add_argument(
+    #     "--version",
+    #     action="version",
+    #     version="%(prog)s " + get_version(), # TODO: this breaks the code at run time (no file setup.py) # noqa
+    # )
     parser.add_argument(
         "--pipeline",
         help="Manage AWSnap pipelines",
