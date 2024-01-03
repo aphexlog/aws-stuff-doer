@@ -80,7 +80,7 @@ def list_profiles():
     for profile in profiles:
         print(f"  - {profile}")
     
-    # todo:
+    #todo:
     #sessions_path = Path.home() / ".aws" / "sso" / "cache"
 
 
@@ -168,14 +168,19 @@ def get_sso_url_from_profile(profile):
 
 def export_temporary_aws_credentials(profile):
     try:
-        #session = boto3.Session(profile_name=profile)
-        #credentials = session.get_credentials()
-        api_sts = boto3.client('sts')
-        response = api_sts.get_session_token()
-        credentials = response['Credentials']
-        access_key = credentials["AccessKeyId"]
-        secret_key = credentials["SecretAccessKey"]
-        session_token = credentials["SessionToken"]
+        session = boto3.Session(profile_name=profile)
+        credentials = session.get_credentials()
+        if credentials is None:
+            api_sts = boto3.client('sts')
+            response = api_sts.get_session_token()
+            credentials = response['Credentials']
+            access_key = credentials["AccessKeyId"]
+            secret_key = credentials["SecretAccessKey"]
+            session_token = credentials["SessionToken"]
+        else:
+            access_key = credentials.access_key
+            secret_key = credentials.secret_key
+            session_token = credentials.token
 
         credentials_path = Path.home() / ".aws" / "credentials"
         config = configparser.ConfigParser()
