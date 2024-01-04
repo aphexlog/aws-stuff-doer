@@ -59,4 +59,14 @@ class PipelineStack(Stack):
 
         pipeline.node.add_dependency(connection)
 
+        pipeline.add_stage(
+            ShellStep(
+                "Deploy",
+                install_commands=install_commands,
+                commands=[
+                    "cdk deploy --require-approval never",
+                ],
+            )
+        )
+
         CfnOutput(self, "PipelineStackOutput", value="PipelineStack")
