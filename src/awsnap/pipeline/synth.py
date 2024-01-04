@@ -54,7 +54,7 @@ class PipelineStack(Stack):
                 ),
                 commands=build_commands,
             ),
-            self_mutation=False,
+            self_mutation=True,
         )
 
         pipeline.node.add_dependency(connection)
