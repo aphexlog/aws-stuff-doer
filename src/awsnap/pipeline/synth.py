@@ -3,6 +3,7 @@ from aws_cdk import (
     Stack,
     CfnOutput,
     aws_codestarconnections as codestar,
+    aws_codepipeline as codepipeline,
 )
 from aws_cdk.pipelines import CodePipeline, CodePipelineSource, ShellStep
 
@@ -40,6 +41,14 @@ class PipelineStack(Stack):
         repo_string = repo_string.split(":")[1]
         owner, repo = repo_string.split("/")
 
+        myPipeline = codepipeline.Pipeline(
+            self,
+            "MyPipeline",
+            pipeline_name="awsnap-pipeline",
+            cross_account_keys=False,
+            restart_execution_on_update=True,
+        )
+
         pipeline = CodePipeline(
             self,
             "Pipeline",
@@ -50,23 +59,13 @@ class PipelineStack(Stack):
                     repo_string,
                     branch,
                     connection_arn=connection.attr_connection_arn,
-                    trigger_on_push=False,
                 ),
                 commands=build_commands,
             ),
             self_mutation=True,
+            code_pipeline=myPipeline,
         )
 
         pipeline.node.add_dependency(connection)
-
-        pipeline.add_stage(
-            ShellStep(
-                "Deploy",
-                install_commands=install_commands,
-                commands=[
-                    "cdk deploy --require-approval never",
-                ],
-            )
-        )
 
         CfnOutput(self, "PipelineStackOutput", value="PipelineStack")
