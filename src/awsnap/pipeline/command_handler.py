@@ -47,7 +47,7 @@ def handle_command(arg):
         owner = repo_url.split("/")[-2]
         repo_string = f"{owner}/{repo_string}"
 
-        build_commands = ["npm install", "npm run build", "cdk synth"]
+        build_commands = ["cdk synth"]
 
         logging.info(
             f"Creating pipeline with name: {pipeline_name}, repo_string={repo_string}, branch={branch}"  # noqa: E501

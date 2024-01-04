@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="awsnap",
-    version="1.1.5",
+    version="1.1.6",
     description="AWS SSO Utility",
     author="Aaron West",
     author_email="aphexlog@gmail.com",
