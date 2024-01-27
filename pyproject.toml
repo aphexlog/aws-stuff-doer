@@ -14,13 +14,15 @@ typeCheckingMode = "strict"
 venvPath = "."
 venv = ".venv"
 
+[tool.ruff]
+
 [project]
-name = "black"
-description = "The uncompromising code formatter."
+name = "AWSnap"
+description = "AWSnap is a tool for managing AWS SSO."
 license = { text = "MIT" }
 requires-python = ">=3.8"
 authors = [
-  { name = "Łukasz Langa", email = "lukasz@langa.pl" },
+  { name = "Aaron West", email = "aphexlog@gmail.com" },
 ]
 
 [tool.isort]
