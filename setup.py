@@ -4,9 +4,12 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+with open("requirements.txt", "r", encoding="utf-8") as fh:
+    requirements = fh.read().splitlines()
+
 setup(
     name="awsnap",
-    version="1.1.9",
+    version="1.1.10",
     description="AWS SSO Utility",
     author="Aaron West",
     author_email="aphexlog@gmail.com",
@@ -19,7 +22,5 @@ setup(
             "awsnap=awsnap.awsnap:main",
         ],
     },
-    install_requires=[
-        "boto3",
-    ],
+    install_requires=requirements,
 )

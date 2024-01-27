@@ -4,7 +4,9 @@ aws-cdk.asset-awscli-v1==2.2.201
 aws-cdk.asset-kubectl-v20==2.1.2
 aws-cdk.asset-node-proxy-agent-v6==2.0.1
 boto3==1.28.49
+boto3-stubs==1.34.29
 botocore==1.31.49
+botocore-stubs==1.34.29
 cattrs==23.2.3
 constructs==10.3.0
 exceptiongroup==1.2.0
@@ -19,5 +21,7 @@ s3transfer==0.6.2
 six==1.16.0
 smmap==5.0.1
 typeguard==2.13.3
+types-awscrt==0.20.3
+types-s3transfer==0.10.0
 typing_extensions==4.9.0
 urllib3==1.26.16

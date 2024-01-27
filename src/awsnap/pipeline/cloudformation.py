@@ -6,9 +6,8 @@ from botocore.exceptions import ClientError
 from .synth import PipelineStack
 import logging
 
-
 def prompt_for_region():
-    region = boto3.session.Session().region_name
+    region = boto3.Session().region_name
     if not region:
         region = input(
             "Enter the region to deploy the pipeline to: "
@@ -178,11 +177,3 @@ def print_activation_instructions(
         f"4. Click the 'Connect' button and follow the prompts to complete the GitHub OAuth flow."  # noqa: E501
     )
     print(instructions)
-
-
-# Call the function with the connection details
-# print_activation_instructions(
-#     "awsnap-connection",
-#     "arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90",  # noqa: E501
-#     region="us-east-1",
-# )
