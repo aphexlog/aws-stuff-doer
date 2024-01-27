@@ -1,9 +1,12 @@
-# Example configuration for Black.
-
-# NOTE: you have to use single-quoted strings in TOML for regular expressions.
-# It's the equivalent of r-strings in Python.  Multiline strings are treated as
-# verbose regular expressions by Black.  Use [ ] to denote a significant space
-# character.
+[project]
+name = "AWSnap"
+description = "AWSnap is a tool for managing AWS SSO."
+version = "1.1.10"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+authors = [
+  { name = "Aaron West", email = "aphexlog@gmail.com" },
+]
 
 [tool.black]
 line-length = 88
@@ -15,15 +18,6 @@ venvPath = "."
 venv = ".venv"
 
 [tool.ruff]
-
-[project]
-name = "AWSnap"
-description = "AWSnap is a tool for managing AWS SSO."
-license = { text = "MIT" }
-requires-python = ">=3.8"
-authors = [
-  { name = "Aaron West", email = "aphexlog@gmail.com" },
-]
 
 [tool.isort]
 atomic = true
