@@ -226,11 +226,11 @@ def get_version():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="AWSnap: AWS SSO Utility",
+        description="AWSnap: An AWS Utility to help manage your projects and sso sessions.",
     )
     parser.add_argument("-p", "--profile", help="AWS profile name")
     parser.add_argument(
-        "--console", action="store_true", help="Open AWS console"
+        "--open", action="store_true", help="Open AWS console"
     )  # noqa
     parser.add_argument(
         "-i",
@@ -255,11 +255,11 @@ def main():
         action="version",
         version=f"%(prog)s {get_version()}",
     )
-    parser.add_argument(
-        "--pipeline",
-        help="Manage AWSnap pipelines",
-        action="store_true",
-    )
+    # parser.add_argument(
+    #     "--pipeline",
+    #     help="Manage AWSnap pipelines",
+    #     action="store_true",
+    # )
 
     args = parser.parse_args()
 
@@ -270,11 +270,11 @@ def main():
         run_shell_command(args.profile, shell_command)
     elif args.list:
         list_profiles()
-    elif args.console:  # Open console when --console flag is used
+    elif args.open:  # Open console when --open flag is used
         sso_url, _ = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
-    elif args.pipeline:
-        handle_command(args.pipeline)
+    # elif args.pipeline:
+        # handle_command(args.pipeline)
     elif args.profile:  # Export credentials when --profile flag is used
         session = boto3.Session(profile_name=args.profile)
 
@@ -291,6 +291,3 @@ def main():
             sys.exit(1)
     else:
         parser.print_help()
-
-if __name__ == "__main__":
-    main()
