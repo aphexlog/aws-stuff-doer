@@ -10,7 +10,7 @@ import botocore.exceptions
 import configparser
 import cmd
 import logging
-from .pipeline.command_handler import handle_command
+from .pipeline.command_handler import handle_command # type: ignore
 
 # from commands.config_command import handle_config_pipeline
 
@@ -263,7 +263,6 @@ def main():
             sys.exit(1)
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()
