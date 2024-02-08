@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "awsnap"
-version = "1.1.19"
+version = "1.3.0"
 description = "AWSnap is a tool that makes managing your AWS projects easier."
 authors = ["Aaron West <aphexlog@gmail.com>"]
 repository = "https://github.com/aphexlog/AWSnap"
@@ -13,6 +13,7 @@ boto3 = "^1.34.36"
 gitpython = "^3.1.41"
 aws-cdk-lib = "^2.126.0"
 boto3-stubs = "^1.34.36"
+setuptools = "^69.0.3"
 
 [tool.poetry.scripts]
 awsnap = "awsnap.awsnap:main"

@@ -1,6 +1,7 @@
 from pathlib import Path
 import boto3
 import webbrowser
+import pkg_resources
 
 import argparse
 import subprocess
@@ -28,7 +29,11 @@ class AWSnapShell(cmd.Cmd):
     prompt = "(awsnap) "
 
     def do_open(self, profile):
-        """Open AWS Console with a specific profile"""
+        """
+        Open AWS Console with a specific profile.
+        Usage:
+            open <profile>
+        """
         try:
             sso_url = get_sso_url_from_profile(profile)
             open_aws_console(profile, sso_url)
@@ -41,19 +46,35 @@ class AWSnapShell(cmd.Cmd):
             )  # noqa
 
     def do_login(self, profile):
-        """Authenticate with AWS SSO"""
+        """
+        Authenticate with AWS SSO.
+        Usage:
+            login <profile>
+        """
         authenticate_sso(profile)
 
     def do_list(self, args):
-        """List available AWS profiles"""
+        """
+        List available AWS profiles.
+        Usage:
+            just type 'list'
+        """
         list_profiles()
 
     def do_exit(self, args):
-        """Exit the interactive shell"""
+        """
+        Exit the interactive shell...
+        Usage:
+            just type 'exit'
+        """
         return True
 
     def do_pipeline(self, args):
-        """Manage AWSnap pipelines"""
+        """
+        WIP – Manage AWSnap pipelines.
+        Usage:
+            pipeline <subcommand> <args>
+        """
         handle_command(args)
 
     def default(self, args):
@@ -191,11 +212,16 @@ def run_shell_command(profile, command):
 
 
 def get_version():
-    # Get the version from the setup.py file
-    with open("setup.py", "r", encoding="utf-8") as fh:
-        for line in fh:
-            if "version=" in line:
-                return line.split('"')[1]
+    # Replace 'your_package_name' with the actual name of your package as specified in the 'pyproject.toml' file.
+    package_name = 'awsnap'
+
+    try:
+        # Get the distribution based on the package name and return its version.
+        return pkg_resources.get_distribution(package_name).version
+    except pkg_resources.DistributionNotFound:
+        # Handle the case where the distribution could not be found
+        return "unknown"
+
 
 
 def main():
@@ -223,14 +249,16 @@ def main():
         nargs="*",
         help="Command followed by its arguments to run in the shell",
     )
-    # parser.add_argument(
-    #     "--version",
-    #     action="version",
-    #     version="%(prog)s " + get_version(), # TODO: this breaks the code at run time (no file setup.py) # noqa
-    # )
+    # add a version flag to check the version of the tool
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {get_version()}",
+    )
     parser.add_argument(
         "--pipeline",
         help="Manage AWSnap pipelines",
+        action="store_true",
     )
 
     args = parser.parse_args()
