@@ -1,5 +1,6 @@
 """ This module defines the pipeline stack. """
 from typing import Optional
+import pathlib
 from aws_cdk import (
     Stack,
     CfnOutput,
@@ -9,6 +10,21 @@ from aws_cdk import (
     aws_codebuild as codebuild,
 )
 from constructs import Construct
+
+is_serverless = False
+is_cdk = False
+
+if pathlib.Path("serverless.yml").exists():
+    is_serverless = True
+
+if pathlib.Path("cdk.json").exists():
+    is_cdk = True
+
+if is_serverless and is_cdk:
+    raise Exception("This project contains both serverless and cdk files. Please remove one of them.")
+
+if not is_serverless and not is_cdk:
+    raise Exception("This project does not contain any serverless or cdk files.")
 
 
 class PipelineStack(Stack):
@@ -39,9 +55,11 @@ class PipelineStack(Stack):
             "pip install -r requirements.txt",
         ]
 
-        build_commands = build_commands or [
-            "cdk synth",
-        ]
+        if is_serverless:
+            build_commands = ["sls deploy"]
+
+        if is_cdk:
+            build_commands = ["cdk deploy"]
 
         repo_string = repo_string.split(":")[1]
         owner, repo = repo_string.split("/")
