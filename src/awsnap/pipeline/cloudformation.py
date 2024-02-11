@@ -32,7 +32,6 @@ def create_pipeline(
         stack_name=stack_name,
         repo_string=repo_string,
         branch=branch,
-        build_commands=build_commands,
     )
 
     # Synthesize the CloudFormation template

@@ -11,22 +11,6 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-is_serverless = False
-is_cdk = False
-
-if pathlib.Path("serverless.yml").exists():
-    is_serverless = True
-
-if pathlib.Path("cdk.json").exists():
-    is_cdk = True
-
-if is_serverless and is_cdk:
-    raise Exception("This project contains both serverless and cdk files. Please remove one of them.")
-
-if not is_serverless and not is_cdk:
-    raise Exception("This project does not contain any serverless or cdk files.")
-
-
 class PipelineStack(Stack):
     """
     This stack creates a pipeline that will build and dloy the CDK stack.
@@ -38,15 +22,16 @@ class PipelineStack(Stack):
         construct_id: str,
         repo_string: str,  # Format: "owner/repo"
         branch: str = "main",
-        build_commands: Optional[list] = None,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        self.determine_project_details()
+
         connection = codestar.CfnConnection(
             self,
             "Connection",
-            connection_name="awsnap-connection",
+            connection_name=f"{self.project_name}-connection",
             provider_type="GitHub",  # or "Bitbucket", "GitHubEnterpriseServer"
         )
 
@@ -54,12 +39,6 @@ class PipelineStack(Stack):
             "npm install -g aws-cdk",
             "pip install -r requirements.txt",
         ]
-
-        if is_serverless:
-            build_commands = ["sls deploy"]
-
-        if is_cdk:
-            build_commands = ["cdk deploy"]
 
         repo_string = repo_string.split(":")[1]
         owner, repo = repo_string.split("/")
@@ -70,16 +49,16 @@ class PipelineStack(Stack):
         cdk_output = codepipeline.Artifact()
 
         # Create a pipeline
-        my_pipeline = codepipeline.Pipeline(
+        resource_pipeline = codepipeline.Pipeline(
             self,
-            "MyPipeline",
-            pipeline_name="awsnap-pipeline",
+            "Pipeline",
+            pipeline_name=f"{self.project_name}-pipeline",
             cross_account_keys=False,
             restart_execution_on_update=True
         )
 
         # Add source stage to pipeline
-        my_pipeline.add_stage(
+        resource_pipeline.add_stage(
             stage_name="Source",
             actions=[
                 cpactions.CodeStarConnectionsSourceAction(
@@ -110,7 +89,7 @@ class PipelineStack(Stack):
                             "commands": install_commands,
                         },
                         "build": {
-                            "commands": build_commands,
+                            "commands": self.build_commands,
                         },
                     },
                     "artifacts": {
@@ -122,7 +101,7 @@ class PipelineStack(Stack):
         )
 
         # Add synth stage to pipeline
-        my_pipeline.add_stage(
+        resource_pipeline.add_stage(
             stage_name="Build",
             actions=[
                 cpactions.CodeBuildAction(
@@ -135,7 +114,7 @@ class PipelineStack(Stack):
         )
 
         # Add deploy stage to pipeline
-        my_pipeline.add_stage(
+        resource_pipeline.add_stage(
             stage_name="Deploy",
             actions=[
                 cpactions.CloudFormationCreateUpdateStackAction(
@@ -150,6 +129,27 @@ class PipelineStack(Stack):
         )
 
         # Add connection to pipeline
-        my_pipeline.node.add_dependency(connection)
+        resource_pipeline.node.add_dependency(connection)
 
         CfnOutput(self, "PipelineStackOutput", value="PipelineStack")
+
+    def determine_project_details(self):
+        """Determine if the project is serverless or cdk & some general project details."""
+        self.project_name = pathlib.Path.cwd().name
+        is_serverless = pathlib.Path("serverless.yml").exists()
+        is_cdk = pathlib.Path("cdk.json").exists()
+
+        if is_serverless and is_cdk:
+            raise Exception("This project contains both serverless and cdk files. Please remove one of them.")
+
+        if not is_serverless and not is_cdk:
+            raise Exception("This project does not contain any serverless or cdk files.")
+
+        self.is_serverless = is_serverless
+        self.is_cdk = is_cdk
+
+        if self.is_serverless:
+            self.build_commands = ["sls package"]
+
+        if self.is_cdk:
+            self.build_commands = ["cdk synth"]

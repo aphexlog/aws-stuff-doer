@@ -1,4 +1,5 @@
 from pathlib import Path
+import pathlib
 import boto3
 import webbrowser
 import pkg_resources
@@ -12,8 +13,6 @@ import configparser
 import cmd
 import logging
 from .pipeline.command_handler import handle_command # type: ignore
-
-# from commands.config_command import handle_config_pipeline
 
 logging.basicConfig(
     level=logging.INFO,
@@ -249,17 +248,11 @@ def main():
         nargs="*",
         help="Command followed by its arguments to run in the shell",
     )
-    # add a version flag to check the version of the tool
     parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {get_version()}",
     )
-    # parser.add_argument(
-    #     "--pipeline",
-    #     help="Manage AWSnap pipelines",
-    #     action="store_true",
-    # )
 
     args = parser.parse_args()
 
@@ -273,8 +266,6 @@ def main():
     elif args.open:  # Open console when --open flag is used
         sso_url, _ = get_sso_url_from_profile(args.profile)
         open_aws_console(args.profile, sso_url)
-    # elif args.pipeline:
-        # handle_command(args.pipeline)
     elif args.profile:  # Export credentials when --profile flag is used
         session = boto3.Session(profile_name=args.profile)
 
