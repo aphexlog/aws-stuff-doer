@@ -1,5 +1,4 @@
 """ This module defines the pipeline stack. """
-from typing import Optional
 import pathlib
 from aws_cdk import (
     Stack,
