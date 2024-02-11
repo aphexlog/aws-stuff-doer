@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as cpactions,
     aws_codebuild as codebuild,
+    aws_iam as iam,
 )
 from constructs import Construct
 
@@ -93,13 +94,21 @@ class PipelineStack(Stack):
                 }
             ),
         )
+        synth_project.add_to_role_policy(
+            statement=iam.PolicyStatement( # type: ignore
+                actions=[
+                    "cloudformation:*",
+                ],
+                resources=["*"],
+            )
+        )
 
         # Add synth stage to pipeline
         resource_pipeline.add_stage(
             stage_name="Build",
             actions=[
                 cpactions.CodeBuildAction(
-                    action_name="CDK_Synth",
+                    action_name="Synth",
                     project=synth_project,
                     input=source_output,
                     outputs=[cdk_output],
@@ -114,7 +123,7 @@ class PipelineStack(Stack):
                 cpactions.CloudFormationCreateUpdateStackAction(
                     action_name="CFN_Deploy",
                     template_path=cdk_output.at_path(
-                        "hal9000-chatbot.template.json"
+                        "cloudformation-template-create-stack.json"
                     ),  # noqa: E501
                     stack_name="MyDeploymentStack",
                     admin_permissions=True,
@@ -145,6 +154,8 @@ class PipelineStack(Stack):
         if self.is_serverless:
             self.install_commands = ["npm install -g serverless"]
             self.build_commands = ["sls package"]
+            if pathlib.Path("package.json").exists():
+                self.build_commands.insert(0, "npm install")
             self.base_directory = ".serverless"
 
         if self.is_cdk:

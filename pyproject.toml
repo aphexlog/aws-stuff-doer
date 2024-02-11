@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "awsnap"
-version = "1.3.20"
+version = "1.3.23"
 description = "AWSnap: an AWS Utility to help manage your projects and sso sessions."
 authors = ["Aaron West <aphexlog@gmail.com>"]
 repository = "https://github.com/aphexlog/AWSnap"
