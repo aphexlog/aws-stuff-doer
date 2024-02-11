@@ -155,7 +155,7 @@ class PipelineStack(Stack):
             self.install_commands = ["npm install -g serverless"]
             self.build_commands = ["sls package"]
             if pathlib.Path("package.json").exists():
-                self.build_commands.insert(0, "npm install")
+                self.install_commands.append("npm install")
             self.base_directory = ".serverless"
 
         if self.is_cdk:
