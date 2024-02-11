@@ -34,11 +34,6 @@ class PipelineStack(Stack):
             provider_type="GitHub",  # or "Bitbucket", "GitHubEnterpriseServer"
         )
 
-        install_commands = [
-            "npm install -g aws-cdk",
-            "pip install -r requirements.txt",
-        ]
-
         repo_string = repo_string.split(":")[1]
         owner, repo = repo_string.split("/")
 
@@ -85,14 +80,14 @@ class PipelineStack(Stack):
                     "version": "0.2",
                     "phases": {
                         "install": {
-                            "commands": install_commands,
+                            "commands": self.install_commands,
                         },
                         "build": {
                             "commands": self.build_commands,
                         },
                     },
                     "artifacts": {
-                        "base-directory": "cdk.out",
+                        "base-directory": self.base_directory,
                         "files": ["*"],
                     },
                 }
@@ -119,7 +114,7 @@ class PipelineStack(Stack):
                 cpactions.CloudFormationCreateUpdateStackAction(
                     action_name="CFN_Deploy",
                     template_path=cdk_output.at_path(
-                        "hal9000-chatbot.template.json",
+                        "hal9000-chatbot.template.json"
                     ),  # noqa: E501
                     stack_name="MyDeploymentStack",
                     admin_permissions=True,
@@ -148,7 +143,11 @@ class PipelineStack(Stack):
         self.is_cdk = is_cdk
 
         if self.is_serverless:
+            self.install_commands = ["npm install -g serverless"]
             self.build_commands = ["sls package"]
+            self.base_directory = ".serverless"
 
         if self.is_cdk:
+            self.install_commands = ["npm install -g aws-cdk", "pip install -r requirements.txt"]
             self.build_commands = ["cdk synth"]
+            self.base_directory = "cdk.out"
