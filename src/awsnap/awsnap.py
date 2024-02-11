@@ -51,6 +51,7 @@ class AWSnapShell(cmd.Cmd):
             login <profile>
         """
         authenticate_sso(profile)
+        export_temporary_aws_credentials(profile)
 
     def do_list(self, args):
         """
