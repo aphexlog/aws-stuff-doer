@@ -121,11 +121,11 @@ class PipelineStack(Stack):
             stage_name="Deploy",
             actions=[
                 cpactions.CloudFormationCreateUpdateStackAction(
-                    action_name="CFN_Deploy",
+                    action_name="Deploy",
                     template_path=cdk_output.at_path(
                         "cloudformation-template-create-stack.json"
                     ),  # noqa: E501
-                    stack_name="MyDeploymentStack",
+                    stack_name=f"{self.project_name}-stack",
                     admin_permissions=True,
                 ),
             ],
