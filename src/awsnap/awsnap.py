@@ -60,11 +60,11 @@ class AWSnapShell(cmd.Cmd):
         """
         list_profiles()
 
-    def do_exit(self, args):
+    def do_quit(self, args):
         """
-        Exit the interactive shell...
+        Quit the interactive shell...
         Usage:
-            just type 'exit'
+            just type 'quit'
         """
         return True
 
