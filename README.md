@@ -65,4 +65,4 @@ Feel free to reach out with questions, suggestions, or just to say hello. Happy 
 
 ---
 
-Thank you for your interest in AWSnap! Follow the project on [GitHub](https://github.com/aphexlog/AWSnap) for the latest updates.
+Thank you for your interest in AWSnap! Follow the project on [GitHub](https://github.com/aphexlog/AWSnap) for the latest updates...
