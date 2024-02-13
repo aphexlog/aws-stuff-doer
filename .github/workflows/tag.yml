@@ -21,28 +21,28 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install Dependencies
+      - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install poetry
 
       - name: Set Git User
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Get Version
+      - name: Get Version from Poetry
         id: get_version
         run: |
-          version=$(python setup.py --version)
+          version=$(poetry version -s)
           echo "VERSION=$version" >> $GITHUB_ENV
-          echo "version=$version" >> $GITHUB_ENV
+          echo "::set-output name=version::$version"
 
       - name: Create Tag
         if: ${{ steps.get_version.outputs.version != github.ref }}
-        # check if the tag already exists and if so, exit successfully
         run: |
           git fetch --tags
-          git tag -l | grep -q "^v${{ env.VERSION }}$" && exit 0
+          # Check if the tag already exists. If it does, exit successfully.
+          git tag -l | grep -q "^v${{ env.VERSION }}$" && exit 0 || echo "Creating new tag"
           git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
           git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }} v${{ env.VERSION }}
