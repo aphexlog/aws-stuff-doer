@@ -1,9 +1,7 @@
 name: Create Release
 
 on:
-    push:
-        tags:
-        - 'v*'
+  workflow_dispatch:
 
 jobs:
     build:
@@ -17,5 +15,5 @@ jobs:
           with:
             tag_name: ${{ github.ref }}
             release_name: ${{ github.ref }} # Simply using the ref as the release name
-            draft: false
+            draft: true
             prerelease: false
