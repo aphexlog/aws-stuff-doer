@@ -1,1 +1,1 @@
-"""__init__.py for rex."""
+"""__init__.py for awsnap."""

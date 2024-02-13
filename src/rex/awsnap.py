@@ -24,8 +24,8 @@ logging.basicConfig(
 logging.getLogger("botocore").setLevel(logging.ERROR)
 
 
-class rexShell(cmd.Cmd):
-    prompt = "(rex) "
+class awsnapShell(cmd.Cmd):
+    prompt = "(awsnap) "
 
     def do_open(self, profile):
         """
@@ -71,7 +71,7 @@ class rexShell(cmd.Cmd):
 
     def do_pipeline(self, args):
         """
-        WIP – Manage rex pipelines.
+        WIP – Manage awsnap pipelines.
         Usage:
             pipeline <subcommand> <args>
         """
@@ -213,7 +213,7 @@ def run_shell_command(profile, command):
 
 def get_version():
     # Replace 'your_package_name' with the actual name of your package as specified in the 'pyproject.toml' file.
-    package_name = 'rex'
+    package_name = 'awsnap'
 
     try:
         # Get the distribution based on the package name and return its version.
@@ -226,7 +226,7 @@ def get_version():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="rex: An AWS Utility to help manage your projects and sso sessions.",
+        description="awsnap: An AWS Utility to help manage your projects and sso sessions.",
     )
     parser.add_argument("-p", "--profile", help="AWS profile name")
     parser.add_argument(
@@ -258,7 +258,7 @@ def main():
     args = parser.parse_args()
 
     if args.interactive:
-        rexShell().cmdloop()
+        awsnapShell().cmdloop()
     elif args.command:
         shell_command = " ".join(args.command)
         run_shell_command(args.profile, shell_command)
