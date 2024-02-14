@@ -65,7 +65,7 @@ def create_pipeline(
         )
         if connection_status["Connection"]["ConnectionStatus"] == "PENDING":
             print_activation_instructions(
-                "awsnap-connection",
+                "asd-connection",
                 "arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90",  # noqa: E501
             )
 
@@ -147,7 +147,7 @@ def tail_cloudformation_logs(stack_name, region=None):
         stack_status = stack_description["Stacks"][0]["StackStatus"]
         if "COMPLETE" in stack_status or "FAILED" in stack_status:
             print_activation_instructions(
-                "awsnap-connection",
+                "asd-connection",
                 "arn:aws:codestar-connections:us-east-1:764114738171:connection/20b3b732-da2f-4c37-a2e1-4528eea4ab90",  # noqa: E501
                 region=region,
             )
