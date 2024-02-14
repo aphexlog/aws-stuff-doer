@@ -1,5 +1,4 @@
 from pathlib import Path
-import pathlib
 import boto3
 import webbrowser
 import pkg_resources
