@@ -2,9 +2,7 @@ import TermTk as ttk
 
 
 def initialize_frame_layout(root: ttk.TTk):
-    main_box = ttk.TTkFrame(
-        parent=root, layout=ttk.TTkVBoxLayout(), frame=False
-    ).setBorder(False)
+    main_box = ttk.TTkFrame(parent=root, layout=ttk.TTkVBoxLayout(), border=False)
     ttk.TTkFrame(
         parent=main_box,
         layout=ttk.TTkVBoxLayout(),
