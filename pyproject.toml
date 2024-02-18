@@ -6,6 +6,9 @@ authors = ["Aaron West <aphexlog@gmail.com>"]
 repository = "https://github.com/aphexlog/aws-stuff-doer"
 license = "MIT"
 readme = "README.md"
+packages = [
+    { from = "src", include = "aws_stuff_doer" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
