@@ -1,31 +1,23 @@
-import TermTk as ttk
+from textual.app import App, ComposeResult
+from textual.widgets import Header, Footer
 
 
-class TerminalUi:
-    def __init__(self):
-        self.root = ttk.TTk(title="ASD")
-        self.root.setLayout(ttk.TTkHBoxLayout())  # type: ignore
-        self.initialize_frame_layout()
+class TerminalUi(App):
+    """A Textual app to manage stopwatches."""
 
-    def initialize_frame_layout(self):
-        main_box = ttk.TTkFrame(
-            parent=self.root,
-            layout=ttk.TTkVBoxLayout(),
-            border=False,
-        )
-        top_frame = ttk.TTkFrame(
-            parent=main_box,
-            layout=ttk.TTkVBoxLayout(),
-        )
-        bottom_frame = ttk.TTkFrame(
-            parent=main_box,
-            layout=ttk.TTkVBoxLayout(),
-        )
+    TITLE = "ASD"
+    BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
 
-    def main(self):
-        self.root.mainloop()
+    def compose(self) -> ComposeResult:
+        """Create child widgets for the app."""
+        yield Header()
+        yield Footer()
+
+    def action_toggle_dark(self) -> None:
+        """An action to toggle dark mode."""
+        self.dark = not self.dark
 
 
 if __name__ == "__main__":
-    term_ui = TerminalUi()
-    term_ui.main()
+    app = TerminalUi()
+    app.run()
