@@ -9,9 +9,8 @@ import os
 import sys
 import botocore.exceptions
 import configparser
-import cmd
 import logging
-from .pipeline.command_handler import handle_command # type: ignore
+
 from aws_stuff_doer.uilib.uilib import AwsStuffDoer
 
 logging.basicConfig(
@@ -22,64 +21,6 @@ logging.basicConfig(
 
 # Set logging level for botocore to ERROR to suppress stack traces
 logging.getLogger("botocore").setLevel(logging.ERROR)
-
-
-class asdShell(cmd.Cmd):
-    prompt = "(asd) "
-
-    def do_open(self, profile):
-        """
-        Open AWS Console with a specific profile.
-        Usage:
-            open <profile>
-        """
-        try:
-            sso_url = get_sso_url_from_profile(profile)
-            open_aws_console(profile, sso_url)
-            logging.info(
-                f"Successfully opened AWS console for profile {profile}"
-            )  # noqa
-        except Exception as e:
-            logging.error(
-                f"Failed to open AWS console for profile {profile}: {str(e)}"
-            )  # noqa
-
-    def do_login(self, profile):
-        """
-        Authenticate with AWS SSO.
-        Usage:
-            login <profile>
-        """
-        authenticate_sso(profile)
-        export_temporary_aws_credentials(profile)
-
-    def do_list(self, args):
-        """
-        List available AWS profiles.
-        Usage:
-            just type 'list'
-        """
-        list_profiles()
-
-    def do_quit(self, args):
-        """
-        Quit the interactive shell...
-        Usage:
-            just type 'quit'
-        """
-        return True
-
-    def do_pipeline(self, args):
-        """
-        WIP – Manage asd pipelines.
-        Usage:
-            pipeline <subcommand> <args>
-        """
-        handle_command(args)
-
-    def default(self, args):
-        print(f"Unknown command: {args} (type 'help' for available commands)")
-
 
 def list_profiles():
     config_path = Path.home() / ".aws" / "config"
