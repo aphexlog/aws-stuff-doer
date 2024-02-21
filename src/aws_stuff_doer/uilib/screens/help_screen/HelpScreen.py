@@ -10,8 +10,7 @@ HELP_TEXT =  """
 
         q: Quit
         d: Toggle dark mode
-        m: Show main screen
-        h: Show help
+        ?: Toggle help screen
 
     """
 
