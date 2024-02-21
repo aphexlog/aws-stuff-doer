@@ -1,10 +1,11 @@
 from textual.app import App
 from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen
 
-class AwsStuffDoer(App): # type: ignore
+
+class AwsStuffDoer(App):
     """beginnings of aws_stuff_doer terminal ui..."""
 
-    MODES = { # type: ignore
+    MODES = {  # type: ignore
         "default": "main",
         "help": "help",
     }
@@ -16,21 +17,18 @@ class AwsStuffDoer(App): # type: ignore
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("d", "toggle_dark", "Toggle dark mode"),
-        ("m", "switch_mode('default')", "Main"),
-        ("h", "switch_mode('help')", "Help"),
+        ("?", "toggle_help", "Toggle Help"),
     ]
 
-    def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode."""
-        if hasattr(self, "dark"):
-            self.dark = not self.dark
-            self.refresh()
-        else:
-            self.dark = True
-            self.refresh()
+    def action_toggle_help(self) -> None:
+        """An action to toggle the help screen."""
+        current_mode = self.current_mode
+        new_mode = "help" if current_mode != "help" else "default"
+        self.switch_mode(new_mode)
 
     def on_mount(self) -> None:
         self.switch_mode("default")
+
 
 if __name__ == "__main__":
     app = AwsStuffDoer()
