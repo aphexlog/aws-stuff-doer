@@ -12,6 +12,7 @@ import configparser
 import cmd
 import logging
 from .pipeline.command_handler import handle_command # type: ignore
+from aws_stuff_doer.uilib.uilib import AwsStuffDoer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -257,7 +258,9 @@ def main():
     args = parser.parse_args()
 
     if args.interactive:
-        asdShell().cmdloop()
+        app = AwsStuffDoer()
+        app.run()
+
     elif args.command:
         shell_command = " ".join(args.command)
         run_shell_command(args.profile, shell_command)
