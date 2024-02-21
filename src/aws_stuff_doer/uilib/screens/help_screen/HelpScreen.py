@@ -6,13 +6,13 @@ HELP_TEXT =  """
                            Help Menu
     ASD: An AWS Utility to help manage your projects and sso sessions.
 
-    Keybindings:
+    Key Bindings:
 
-        d: Toggle dark mode
         q: Quit
+        d: Toggle dark mode
+        m: Show main screen
         h: Show help
 
-    Press escape to exit.
     """
 
 class HelpScreen(Screen): # type: ignore
