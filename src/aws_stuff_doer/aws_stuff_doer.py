@@ -22,6 +22,7 @@ logging.basicConfig(
 # Set logging level for botocore to ERROR to suppress stack traces
 logging.getLogger("botocore").setLevel(logging.ERROR)
 
+
 def list_profiles():
     config_path = Path.home() / ".aws" / "config"
     config = configparser.ConfigParser()
@@ -154,7 +155,7 @@ def run_shell_command(profile, command):
 
 def get_version():
     # Replace 'your_package_name' with the actual name of your package as specified in the 'pyproject.toml' file.
-    package_name = 'aws-stuff-doer'
+    package_name = "aws-stuff-doer"
 
     try:
         # Get the distribution based on the package name and return its version.
@@ -164,21 +165,12 @@ def get_version():
         return "unknown"
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="ASD: An AWS Utility to help manage your projects and sso sessions.",
     )
     parser.add_argument("-p", "--profile", help="AWS profile name")
-    parser.add_argument(
-        "--open", action="store_true", help="Open AWS console"
-    )  # noqa
-    parser.add_argument(
-        "-i",
-        "--interactive",
-        action="store_true",
-        help="Enter interactive mode",
-    )
+    parser.add_argument("--open", action="store_true", help="Open AWS console")  # noqa
     parser.add_argument(
         "-l",
         "--list",
@@ -198,7 +190,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.interactive:
+    if not any(vars(args).values()):
         app = AwsStuffDoer()
         app.run()
 
