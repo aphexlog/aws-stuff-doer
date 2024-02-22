@@ -6,6 +6,9 @@ authors = ["Aaron West <aphexlog@gmail.com>"]
 repository = "https://github.com/aphexlog/aws-stuff-doer"
 license = "MIT"
 readme = "README.md"
+packages = [
+    { from = "src", include = "aws_stuff_doer" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -14,6 +17,7 @@ gitpython = "^3.1.41"
 aws-cdk-lib = "^2.126.0"
 boto3-stubs = "^1.34.36"
 setuptools = "^69.0.3"
+textual = "^0.51.0"
 
 [tool.poetry.scripts]
 asd = "aws_stuff_doer.aws_stuff_doer:main"
