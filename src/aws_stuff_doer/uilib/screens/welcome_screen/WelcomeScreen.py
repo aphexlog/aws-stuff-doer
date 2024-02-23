@@ -6,7 +6,6 @@ from textual.containers import Container
 from textual.widgets import Header, Footer, Static
 
 
-
 WELCOME_MD = """\
 # Welcome to ASD!
 
@@ -23,13 +22,13 @@ ASD is a terminal-based User Interface (UI) designed to streamline the managemen
 For more information, please visit the [GitHub repo](https://github.com/aphexlog/aws-stuff-doer).
 """
 
-class WelcomeScreen(Screen): # type: ignore
+
+class WelcomeScreen(Screen):  # type: ignore
     """A simple welcome screen."""
 
-    CSS_PATH = "welcome_screen.tcss"
+    CSS_PATH = "welcome_screen.css"
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Container(Static(Markdown(WELCOME_MD), id="text"), id="md") # type: ignore
+        yield Container(Static(Markdown(WELCOME_MD), id="text"), id="md")  # type: ignore
         yield Footer()
-
