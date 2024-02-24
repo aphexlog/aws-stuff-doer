@@ -1,6 +1,7 @@
 """The login functionality for the aws_stuff_doer"""
 
 # this package should enable users to login to AWS SSO and take the profile as an argument to the funtion
+from typing import List
 import subprocess
 from pathlib import Path
 import boto3
@@ -102,7 +103,7 @@ def export_temporary_aws_credentials(profile):
         return False
 
 
-def list_profiles():
+def list_profiles() -> List[str]:
     config_path = Path.home() / ".aws" / "config"
     config = configparser.ConfigParser()
     config.read(config_path)
@@ -112,7 +113,4 @@ def list_profiles():
         for section in config.sections()
         if section.startswith("profile ")
     ]
-
-    print("Available Profiles:")
-    for profile in profiles:
-        print(f"  - {profile}")
+    return profiles

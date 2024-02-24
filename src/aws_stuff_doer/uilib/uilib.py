@@ -2,9 +2,6 @@ from textual import events
 from textual.app import App
 
 from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
-from textual.widgets import ListItem
-from aws_stuff_doer.uilib.widgets import ProfileSelect
-from aws_stuff_doer.login.login import authenticate_sso
 
 
 class AwsStuffDoer(App):  # type: ignore
@@ -47,7 +44,7 @@ class AwsStuffDoer(App):  # type: ignore
 
     def action_select_profile(self) -> None:
         """An action to select a profile."""
-        item = ListItem("Select a profile")
+        pass
 
 
 if __name__ == "__main__":
