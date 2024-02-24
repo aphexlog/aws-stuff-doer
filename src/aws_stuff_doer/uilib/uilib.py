@@ -2,9 +2,10 @@ from textual import events
 from textual.app import App
 
 from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
+from aws_stuff_doer.login.login import authenticate_sso
 
 
-class AwsStuffDoer(App): # type: ignore
+class AwsStuffDoer(App):  # type: ignore
     """beginnings of aws_stuff_doer terminal ui..."""
 
     MODES = {  # type: ignore
@@ -13,16 +14,13 @@ class AwsStuffDoer(App): # type: ignore
         "help": "help",
     }
 
-    SCREENS = {
-        "welcome": WelcomeScreen,
-        "main": MainScreen,
-        "help": HelpScreen
-    }
+    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen}
 
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("d", "toggle_dark", "Toggle dark mode"),
         ("?", "toggle_help", "Toggle Help"),
+        ("l", "login", "Login to AWS SSO"),
     ]
 
     TITLE = "ASD"
@@ -43,6 +41,17 @@ class AwsStuffDoer(App): # type: ignore
         current_mode = self.current_mode
         new_mode = "help" if current_mode != "help" else "default"
         self.switch_mode(new_mode)
+
+    def action_login(self) -> None:
+        """An action to login to AWS SSO."""
+        profile = self.select_profile()
+        authenticate_sso(profile)
+
+    def select_profile(self) -> str:
+        # Here you should implement the logic to let the user select a profile
+        # For now, we'll just return a placeholder profile name
+        return "elevator-robot"
+
 
 if __name__ == "__main__":
     app = AwsStuffDoer()
