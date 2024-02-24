@@ -6,6 +6,7 @@ from pathlib import Path
 import boto3
 import logging
 import botocore.exceptions
+import configparser
 
 
 logging.basicConfig(
@@ -99,3 +100,19 @@ def export_temporary_aws_credentials(profile):
     except Exception as err:
         logging.error(f"Failed to export temporary AWS credentials: {err}")
         return False
+
+
+def list_profiles():
+    config_path = Path.home() / ".aws" / "config"
+    config = configparser.ConfigParser()
+    config.read(config_path)
+
+    profiles = [
+        section.replace("profile ", "")
+        for section in config.sections()
+        if section.startswith("profile ")
+    ]
+
+    print("Available Profiles:")
+    for profile in profiles:
+        print(f"  - {profile}")
