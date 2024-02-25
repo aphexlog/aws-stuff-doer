@@ -1,7 +1,8 @@
 """a profile selection screen"""
 
 from textual.app import App, ComposeResult
-from textual.widgets import ListView, ListItem, Label, Footer
+from textual.screen import Screen
+from textual.widgets import ListView, ListItem, Label, Footer, Header
 from aws_stuff_doer.login.login import list_profiles
 
 
@@ -22,9 +23,10 @@ class LabelItem(ListItem):
         yield Label(self.label)
 
 
-class ListProfileApp(App):
+class ListProfileApp(Screen):
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield ListView(*[LabelItem(profile) for profile in PROFILES], id="list")
         yield Label("Choose a profile...", id="chosen")
         yield Footer()

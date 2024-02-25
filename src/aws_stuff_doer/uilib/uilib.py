@@ -2,6 +2,7 @@ from textual import events
 from textual.app import App
 
 from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
+from aws_stuff_doer.uilib.widgets.profile_select import ListProfileApp
 
 
 class AwsStuffDoer(App):  # type: ignore
@@ -9,7 +10,7 @@ class AwsStuffDoer(App):  # type: ignore
 
     MODES = {"welcome": "welcome", "default": "main", "help": "help"}  # type: ignore
 
-    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen}
+    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp()}  # type: ignore
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -44,7 +45,7 @@ class AwsStuffDoer(App):  # type: ignore
 
     def action_select_profile(self) -> None:
         """An action to select a profile."""
-        pass
+        self.app.push_screen("profile")
 
 
 if __name__ == "__main__":
