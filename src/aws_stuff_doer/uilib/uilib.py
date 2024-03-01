@@ -4,7 +4,6 @@ from textual.app import App
 from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
 from aws_stuff_doer.uilib.widgets.profile_select import ListProfileApp
 
-
 class AwsStuffDoer(App):  # type: ignore
     """beginnings of aws_stuff_doer terminal ui..."""
 

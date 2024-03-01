@@ -3,8 +3,9 @@ from rich.markdown import Markdown
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.containers import Container
-from textual.widgets import Header, Footer, Static
+from textual.widgets import Footer, Static
 
+from aws_stuff_doer.uilib.widgets import CustomHeader
 
 WELCOME_MD = """\
 # Welcome to ASD!
@@ -29,6 +30,6 @@ class WelcomeScreen(Screen):  # type: ignore
     CSS_PATH = "welcome_screen.css"
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield CustomHeader()
         yield Container(Static(Markdown(WELCOME_MD), id="text"), id="md")  # type: ignore
         yield Footer()
