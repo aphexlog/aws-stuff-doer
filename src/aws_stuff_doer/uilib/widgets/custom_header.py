@@ -15,9 +15,9 @@ class HeaderProfile(Widget):
         padding: 0 1;
     }
     """
-    profile: str | None = None  # Make profile a class variable
+    profile: str | None = None
 
-    def __init__(self, profile: str | None = None):
+    def __init__(self):
         super().__init__()
 
     def update_profile(self, profile: str):
@@ -27,7 +27,7 @@ class HeaderProfile(Widget):
 
     def render(self):
         """Update the header aws profile."""
-        if self.profile:
+        if HeaderProfile.profile is not None:
             text = f"Profile: {HeaderProfile.profile}"
         else:
             text = "Not logged in..."
@@ -78,7 +78,6 @@ class CustomHeader(Widget):
                  name: str | None = None,
                  id: str | None = None,
                  classes: str | None = None,
-                 profile: str | None = None,
                 ):
         super().__init__(name=name, id=id, classes=classes)
         self.header_profile = HeaderProfile()
