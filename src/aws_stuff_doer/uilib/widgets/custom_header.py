@@ -32,7 +32,7 @@ class HeaderProfile(Widget):
         else:
             text = "Not logged in..."
 
-        return Text(text)
+        return Text(text, no_wrap=True, overflow="ellipsis")
 
 class HeaderTitle(Widget):
     """Display the title / subtitle in the header."""
