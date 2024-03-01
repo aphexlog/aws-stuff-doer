@@ -1,8 +1,10 @@
 """a profile selection screen"""
 
+from textual import events
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import ListView, ListItem, Label, Footer
+
 from aws_stuff_doer.login.login import list_profiles
 from aws_stuff_doer.uilib.widgets import CustomHeader
 
@@ -32,4 +34,10 @@ class ListProfileApp(Screen):
     def on_list_view_selected(self, event: ListView.Selected):
         self.query_one("#chosen", Label).update(event.item.label)
         self.query_one("#header", CustomHeader).update_profile(event.item.label)
+        self.app.pop_screen()
 
+
+    def on_key(self, event: events.Key) -> None:
+        """Handle key events."""
+        if event.key == "escape":
+            self.app.pop_screen()
