@@ -3,7 +3,7 @@ import pkg_resources
 import argparse
 import logging
 
-from aws_stuff_doer.uilib.uilib import AwsStuffDoer
+from aws_stuff_doer.uilib import App
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,7 +53,7 @@ def main():
     args = parser.parse_args()
 
     if not any(vars(args).values()):
-        app = AwsStuffDoer()
+        app = App()
         app.run()
     else:
         parser.print_help()
