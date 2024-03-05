@@ -10,7 +10,7 @@ class App(App):  # type: ignore
 
     MODES = {"welcome": "welcome", "default": "main", "help": "help"}  # type: ignore
 
-    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp()}  # type: ignore
+    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp}  # type: ignore
 
     BINDINGS = [
         ("q", "quit", "Quit"),
