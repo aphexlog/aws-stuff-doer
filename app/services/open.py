@@ -8,7 +8,7 @@ import boto3
 import logging
 import botocore.exceptions
 
-from aws_stuff_doer.login.login import authenticate_sso
+from app.services.login import authenticate_sso
 
 
 def get_sso_url_from_profile(profile) -> Tuple[str, str]:

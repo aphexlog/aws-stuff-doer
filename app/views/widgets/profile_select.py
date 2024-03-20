@@ -5,8 +5,8 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import ListView, ListItem, Label, Footer
 
-from aws_stuff_doer.login.login import list_profiles
-from aws_stuff_doer.uilib.widgets import CustomHeader
+from app.services.login import list_profiles
+from app.views.widgets import CustomHeader
 
 def get_profiles():
     return list_profiles()

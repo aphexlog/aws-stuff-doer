@@ -2,7 +2,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, Placeholder
 
-from aws_stuff_doer.uilib.widgets import CustomHeader
+from app.views.widgets import CustomHeader
 
 
 class MainScreen(Screen): # type: ignore

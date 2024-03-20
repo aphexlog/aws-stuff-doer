@@ -7,7 +7,7 @@ repository = "https://github.com/aphexlog/aws-stuff-doer"
 license = "MIT"
 readme = "README.md"
 packages = [
-    { from = "src", include = "aws_stuff_doer" }
+    { from = ".", include = "main.py" }
 ]
 
 [tool.poetry.dependencies]
@@ -20,7 +20,7 @@ setuptools = "^69.0.3"
 textual = "^0.51.0"
 
 [tool.poetry.scripts]
-asd = "aws_stuff_doer.aws_stuff_doer:main"
+asd = "main:main"
 
 [build-system]
 requires = ["poetry-core"]

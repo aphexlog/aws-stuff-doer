@@ -1,8 +1,8 @@
 from textual import events
 from textual.app import App
 
-from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
-from aws_stuff_doer.uilib.widgets.profile_select import ListProfileApp
+from app.views.screens import MainScreen, HelpScreen, WelcomeScreen
+from app.views.widgets.profile_select import ListProfileApp
 
 
 class App(App):  # type: ignore

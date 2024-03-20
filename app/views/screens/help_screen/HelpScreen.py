@@ -2,7 +2,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, Static
 
-from aws_stuff_doer.uilib.widgets import CustomHeader
+from app.views.widgets import CustomHeader
 
 HELP_TEXT = """
                            Help Menu

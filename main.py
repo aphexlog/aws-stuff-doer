@@ -3,7 +3,7 @@ import pkg_resources
 import argparse
 import logging
 
-from aws_stuff_doer.uilib import App
+from app.app import App
 
 logging.basicConfig(
     level=logging.INFO,

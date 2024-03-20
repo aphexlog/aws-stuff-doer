@@ -5,7 +5,7 @@ from textual.screen import Screen
 from textual.containers import Container
 from textual.widgets import Footer, Static
 
-from aws_stuff_doer.uilib.widgets import CustomHeader
+from app.views.widgets import CustomHeader
 
 WELCOME_MD = """\
 # Welcome to ASD!
