@@ -1,7 +1,8 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, Static
-from textual.command import CommandList
+from textual.widgets import Footer, Static
+
+from aws_stuff_doer.uilib.widgets import CustomHeader
 
 HELP_TEXT = """
                            Help Menu
@@ -20,6 +21,6 @@ class HelpScreen(Screen):  # type: ignore
     """A simple help screen."""
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield CustomHeader()
         yield Static(HELP_TEXT)
         yield Footer()

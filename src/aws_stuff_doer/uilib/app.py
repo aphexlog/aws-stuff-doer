@@ -5,12 +5,12 @@ from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
 from aws_stuff_doer.uilib.widgets.profile_select import ListProfileApp
 
 
-class AwsStuffDoer(App):  # type: ignore
+class App(App):  # type: ignore
     """beginnings of aws_stuff_doer terminal ui..."""
 
     MODES = {"welcome": "welcome", "default": "main", "help": "help"}  # type: ignore
 
-    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp()}  # type: ignore
+    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp}  # type: ignore
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -46,8 +46,3 @@ class AwsStuffDoer(App):  # type: ignore
     def action_select_profile(self) -> None:
         """An action to select a profile."""
         self.app.push_screen("profile")
-
-
-if __name__ == "__main__":
-    app = AwsStuffDoer()
-    app.run()
