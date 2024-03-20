@@ -2,27 +2,22 @@ from textual import events
 from textual.app import App
 
 from aws_stuff_doer.uilib.screens import MainScreen, HelpScreen, WelcomeScreen
+from aws_stuff_doer.uilib.widgets.profile_select import ListProfileApp
 
 
-class AwsStuffDoer(App): # type: ignore
+class App(App):  # type: ignore
     """beginnings of aws_stuff_doer terminal ui..."""
 
-    MODES = {  # type: ignore
-        "welcome": "welcome",
-        "default": "main",
-        "help": "help",
-    }
+    MODES = {"welcome": "welcome", "default": "main", "help": "help"}  # type: ignore
 
-    SCREENS = {
-        "welcome": WelcomeScreen,
-        "main": MainScreen,
-        "help": HelpScreen
-    }
+    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp}  # type: ignore
 
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("d", "toggle_dark", "Toggle dark mode"),
         ("?", "toggle_help", "Toggle Help"),
+        ("l", "login", "Login to AWS SSO"),
+        ("p", "select_profile", "Select a profile"),
     ]
 
     TITLE = "ASD"
@@ -44,6 +39,10 @@ class AwsStuffDoer(App): # type: ignore
         new_mode = "help" if current_mode != "help" else "default"
         self.switch_mode(new_mode)
 
-if __name__ == "__main__":
-    app = AwsStuffDoer()
-    app.run()
+    def action_login(self) -> None:
+        """An action to login to AWS SSO."""
+        pass
+
+    def action_select_profile(self) -> None:
+        """An action to select a profile."""
+        self.app.push_screen("profile")
