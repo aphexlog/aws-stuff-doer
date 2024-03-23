@@ -10,7 +10,7 @@ class App(App):  # type: ignore
 
     MODES = {"welcome": "welcome", "default": "main", "help": "help"}  # type: ignore
 
-    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen, "profile": ListProfileApp}  # type: ignore
+    SCREENS = {"welcome": WelcomeScreen, "main": MainScreen, "help": HelpScreen}  # type: ignore
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -45,4 +45,4 @@ class App(App):  # type: ignore
 
     def action_select_profile(self) -> None:
         """An action to select a profile."""
-        self.app.push_screen("profile")
+        self.app.mount(ListProfileApp())

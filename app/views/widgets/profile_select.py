@@ -2,11 +2,10 @@
 
 from textual import events
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import ListView, ListItem, Label, Footer
+from textual.widget import Widget
+from textual.widgets import ListView, ListItem, Label
 
 from app.services.login import list_profiles
-from app.views.widgets import CustomHeader
 
 def get_profiles():
     return list_profiles()
@@ -22,14 +21,11 @@ class LabelItem(ListItem):
     def compose(self) -> ComposeResult:
         yield Label(self.label)
 
-
-class ListProfileApp(Screen):
+class ListProfileApp(Widget):
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(id="header")
         yield ListView(*[LabelItem(profile) for profile in PROFILES], id="list")
         yield Label("Choose a profile...", id="chosen")
-        yield Footer()
 
     def on_list_view_selected(self, event: ListView.Selected):
         self.query_one("#chosen", Label).update(event.item.label)
