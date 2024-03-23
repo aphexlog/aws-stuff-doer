@@ -1,8 +1,15 @@
 import argparse
 import logging
 from app.get_version import get_version
+from app.services.login import AWSAuthenticator
+# from app.services.open import open_aws_console
 
 from app.ui import App
+
+def get_profiles():
+    return AWSAuthenticator.list_profiles()
+
+PROFILES: list[str] = get_profiles()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,5 +48,14 @@ def main():
     if not any(vars(args).values()):
         app = App()
         app.run()
+    elif args.list:
+        print("Available AWS profiles:")
+        for profile in PROFILES:
+            print(profile)
+    elif args.profile:
+        # login to AWS SSO
+        authenticator = AWSAuthenticator(args.profile)
+        if not authenticator.sso_credentials_exist():
+            authenticator.authenticate_sso()
     else:
         parser.print_help()

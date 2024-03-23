@@ -5,10 +5,10 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import ListView, ListItem, Label
 
-from app.services.login import list_profiles
+from app.services.login import AWSAuthenticator
 
 def get_profiles():
-    return list_profiles()
+    return AWSAuthenticator.list_profiles()
 
 PROFILES: list[str] = get_profiles()
 
@@ -24,6 +24,7 @@ class LabelItem(ListItem):
 class ListProfileApp(Widget):
 
     def compose(self) -> ComposeResult:
+        print("TEST...")
         yield ListView(*[LabelItem(profile) for profile in PROFILES], id="list")
         yield Label("Choose a profile...", id="chosen")
 

@@ -12,7 +12,7 @@ class User:
         self.aws_session_token = aws_session_token
 
     def __str__(self):
-        return f"aws_profile={self.aws_profile}, aws_access_key={self.aws_access_key}, aws_secret_key={self.aws_secret_key}, aws_session_token={self.aws_session_token})"
+        return f"aws_profile={self.aws_profile}, aws_access_key={self.aws_access_key}, aws_secret_key={self.aws_secret_key}, aws_session_token={self.aws_session_token}"
 
     def __repr__(self):
         return str(self)
