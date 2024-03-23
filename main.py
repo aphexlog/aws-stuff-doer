@@ -2,7 +2,7 @@ import argparse
 import logging
 from app.get_version import get_version
 from app.services.login import AWSAuthenticator
-# from app.services.open import open_aws_console
+from app.services.open import open_aws_console
 
 from app.ui import App
 
@@ -44,6 +44,7 @@ def main():
     )
 
     args = parser.parse_args()
+    # sso_url = AWSAuthenticator.get_sso_url_from_profile(args.profile)
 
     if not any(vars(args).values()):
         app = App()
@@ -53,9 +54,7 @@ def main():
         for profile in PROFILES:
             print(profile)
     elif args.profile:
-        # login to AWS SSO
         authenticator = AWSAuthenticator(args.profile)
-        if not authenticator.sso_credentials_exist():
-            authenticator.authenticate_sso()
+        authenticator.authenticate_sso()
     else:
         parser.print_help()

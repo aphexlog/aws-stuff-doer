@@ -8,7 +8,7 @@ import boto3
 import logging
 import botocore.exceptions
 
-from app.services.login import authenticate_sso
+from app.services.login import AWSAuthenticator
 
 
 def get_sso_url_from_profile(profile) -> Tuple[str, str]:
@@ -25,7 +25,7 @@ def get_sso_url_from_profile(profile) -> Tuple[str, str]:
 
 
 def open_aws_console(profile, sso_url):
-    sso_url, region = get_sso_url_from_profile(profile)
+    sso_url, region = AWSAuthenticator.get_sso_url_from_profile(profile)
     try:
         # Create the session with the region if available
         session = (

@@ -32,16 +32,19 @@ class AWSAuthenticator:
             return False
 
     def authenticate_sso(self) -> bool:
-        try:
-            command = ["aws", "sso", "login", "--profile", self.profile]
-            subprocess.run(command, check=True)
-            logging.info(f"Successfully authenticated SSO for profile {self.profile}")
-            return True
-        except subprocess.CalledProcessError as err:
-            logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
-        except Exception as err:
-            logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
-        return False
+            if self.sso_credentials_exist():
+                logging.info(f"Already authenticated SSO for profile {self.profile}")
+                return True
+            try:
+                command = ["aws", "sso", "login", "--profile", self.profile]
+                subprocess.run(command, check=True)
+                logging.info(f"Successfully authenticated SSO for profile {self.profile}")
+                return True
+            except subprocess.CalledProcessError as err:
+                logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
+            except Exception as err:
+                logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
+            return False
 
     def get_sso_url_from_profile(self) -> Optional[Tuple[str, str]]:
         config = configparser.ConfigParser()
