@@ -2,7 +2,6 @@ import argparse
 import logging
 from app.get_version import get_version
 from app.services.login import AWSAuthenticator
-from app.services.open import open_aws_console
 
 from app.ui import App
 
@@ -42,19 +41,26 @@ def main():
         action="version",
         version=f"%(prog)s {get_version()}",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Print debug information",
+    )
 
     args = parser.parse_args()
-    # sso_url = AWSAuthenticator.get_sso_url_from_profile(args.profile)
 
     if not any(vars(args).values()):
         app = App()
         app.run()
-    elif args.list:
+    if args.list:
         print("Available AWS profiles:")
         for profile in PROFILES:
             print(profile)
-    elif args.profile:
+    if args.profile:
         authenticator = AWSAuthenticator(args.profile)
         authenticator.authenticate_sso()
-    else:
-        parser.print_help()
+    if args.open:
+        authenticator = AWSAuthenticator(args.profile)
+        print("We are here!!!!")
+        authenticator.open_aws_console()
+        print("Opening AWS Console...")

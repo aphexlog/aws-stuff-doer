@@ -11,17 +11,16 @@ import botocore.exceptions
 from app.services.login import AWSAuthenticator
 
 
-def get_sso_url_from_profile(profile) -> Tuple[str, str]:
-    config = configparser.ConfigParser()
+def get_sso_url_from_profile(profile: str) -> str:
+    """Get the SSO URL and region from the AWS profile."""
+    # config = configparser.ConfigParser()
     config_path = Path.home() / ".aws" / "config"
+    config = configparser.ConfigParser()
 
     sso_session = config.get(f"profile {profile}", "sso_session")
     sso_start_url = config.get(f"sso-session {sso_session}", "sso_start_url")
-    region = config.get(
-        f"profile {profile}", "region", fallback=None
-    )  # Fetching the region
 
-    return sso_start_url, region
+    return sso_start_url
 
 
 def open_aws_console(profile, sso_url):
