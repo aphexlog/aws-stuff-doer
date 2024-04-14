@@ -61,6 +61,4 @@ def main():
         authenticator.authenticate_sso()
     if args.open:
         authenticator = AWSAuthenticator(args.profile)
-        print("We are here!!!!")
         authenticator.open_aws_console()
-        print("Opening AWS Console...")
