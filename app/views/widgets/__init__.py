@@ -2,3 +2,4 @@
 
 # from .profile_select import ProfileSelect  # type: ignore
 from .custom_header import CustomHeader  # type: ignore
+from .profile_select import ListProfiles  # type: ignore

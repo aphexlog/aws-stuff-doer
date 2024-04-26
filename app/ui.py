@@ -1,8 +1,9 @@
 from textual import events
 from textual.app import App
+from textual.containers import Container
 
 from app.views.screens import MainScreen, HelpScreen, WelcomeScreen
-from app.views.widgets.profile_select import ListProfileApp
+from app.views.widgets.profile_select import ListProfiles
 
 
 class App(App):  # type: ignore
@@ -45,4 +46,4 @@ class App(App):  # type: ignore
 
     def action_select_profile(self) -> None:
         """An action to select a profile."""
-        self.app.mount(ListProfileApp())
+        Container(ListProfiles())

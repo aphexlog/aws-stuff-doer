@@ -21,7 +21,27 @@ class LabelItem(ListItem):
     def compose(self) -> ComposeResult:
         yield Label(self.label)
 
-class ListProfileApp(Widget):
+class ListProfiles(Widget):
+    """A simple profile selection window."""
+
+    DEFAULT_CSS = """
+    ListView {
+        color: white;
+        width: 30%;
+    }
+
+    ListItem {
+        padding: 1;
+    }
+
+    ListItem:hover {
+        background: $panel;
+    }
+
+    Label {
+        color: white;
+    }
+    """
 
     def compose(self) -> ComposeResult:
         print("TEST...")
