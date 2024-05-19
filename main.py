@@ -1,9 +1,8 @@
 import argparse
 import logging
-from app.get_version import get_version
-from app.services.login import AWSAuthenticator
+from cmd.get_version import get_version
+from cmd.services.login import AWSAuthenticator
 
-from app.ui import App
 
 def get_profiles():
     return AWSAuthenticator.list_profiles()
@@ -50,8 +49,8 @@ def main():
     args = parser.parse_args()
 
     if not any(vars(args).values()):
-        app = App()
-        app.run()
+        parser.print_help()
+        return
     if args.list:
         print("Available AWS profiles:")
         for profile in PROFILES:

@@ -8,7 +8,7 @@ import boto3
 import logging
 import botocore.exceptions
 
-from app.services.login import AWSAuthenticator
+from cmd.services.login import AWSAuthenticator
 
 
 def get_sso_url_from_profile(profile: str) -> str:
