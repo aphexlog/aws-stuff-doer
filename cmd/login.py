@@ -50,6 +50,7 @@ class AWSAuthenticator:
             logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
         return False
 
+
     def get_sso_url_from_profile(self) -> Optional[str]:
         """Get the SSO start URL from the AWS profile configuration."""
         config = configparser.ConfigParser()
@@ -64,6 +65,21 @@ class AWSAuthenticator:
                 logging.error("Could not find the necessary SSO configuration.")
                 return None
         return None
+
+    def get_account_url_from_profile(self) -> Optional[str]:
+        """Get the account URL from the AWS profile configuration."""
+        config = configparser.ConfigParser()
+        if self.config_path.exists():
+            config.read(self.config_path)
+            try:
+                orofile = f"profile {self.profile}"
+                account_id = config.get(orofile, "sso_account_id")
+                role_name = config.get(orofile, "sso_role_name")
+                account_url = f"https://aphexlog.awsapps.com/start/#/console?account_id={account_id}&role_name={role_name}"
+                return account_url
+            except configparser.NoSectionError:
+                logging.error("Could not find the necessary account configuration.")
+                return None
 
     def export_temporary_aws_credentials(self) -> bool:
         """Export temporary AWS credentials to the default profile in ~/.aws/credentials."""
@@ -90,12 +106,21 @@ class AWSAuthenticator:
             logging.error(f"Failed to export temporary AWS credentials: {err}")
             return False
 
-    def open_aws_console(self) -> None:
+    def open_aws_sso_console(self) -> None:
         """Open the AWS Management Console in the default web browser."""
         try:
             sso_start_url = self.get_sso_url_from_profile()
             if sso_start_url:
                 subprocess.run(["open", sso_start_url])
+        except Exception as err:
+            logging.error(f"Failed to open the AWS Management Console: {err}")
+
+    def open_aws_account_console(self) -> None:
+        """Open the AWS Management Console in the default web browser."""
+        try:
+            account_url = self.get_account_url_from_profile()
+            if account_url:
+                subprocess.run(["open", account_url])
         except Exception as err:
             logging.error(f"Failed to open the AWS Management Console: {err}")
 

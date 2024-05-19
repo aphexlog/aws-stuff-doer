@@ -1,7 +1,7 @@
 import argparse
 import logging
 from cmd.get_version import get_version
-from cmd.services.login import AWSAuthenticator
+from cmd.login import AWSAuthenticator
 
 
 def get_profiles():
@@ -23,7 +23,8 @@ def main():
         description="ASD: An AWS Utility to help manage your projects and sso sessions.",
     )
     parser.add_argument("-p", "--profile", help="AWS profile name")
-    parser.add_argument("--open", action="store_true", help="Open AWS console")  # noqa
+    parser.add_argument("--open-sso", action="store_true", help="Open AWS sso user consol")  # noqa
+    parser.add_argument("--open", action="store_true", help="Open AWS account consol")  # noqa
     parser.add_argument(
         "-l",
         "--list",
@@ -60,4 +61,7 @@ def main():
         authenticator.authenticate_sso()
     if args.open:
         authenticator = AWSAuthenticator(args.profile)
-        authenticator.open_aws_console()
+        authenticator.open_aws_account_console()
+    if args.open_sso:
+        authenticator = AWSAuthenticator(args.profile)
+        authenticator.open_aws_sso_console()
