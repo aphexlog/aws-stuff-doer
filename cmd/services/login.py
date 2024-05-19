@@ -4,6 +4,7 @@ from pathlib import Path
 import boto3
 import logging
 import configparser
+from botocore.exceptions import TokenRetrievalError
 
 # Configure logging as before
 logging.basicConfig(
@@ -28,7 +29,7 @@ class AWSAuthenticator:
         try:
             self.client.get_caller_identity()
             return True
-        except (self.client.exceptions.ClientError):
+        except (self.client.exceptions.ClientError, TokenRetrievalError):
             return False
 
     def authenticate_sso(self) -> bool:
