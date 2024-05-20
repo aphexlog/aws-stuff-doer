@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aws-stuff-doer"
-version = "0.1.3"
+version = "0.1.4"
 description = "ASD is a utility to help manage your AWS projects and sso sessions."
 authors = [
     "Aaron West <aphexlog@gmail.com>",
