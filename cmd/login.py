@@ -1,5 +1,6 @@
 import os
 import shutil
+import platform
 from typing import Optional
 import subprocess
 from pathlib import Path
@@ -60,18 +61,35 @@ class AWSAuthenticator:
 
     def install_aws_cli_v2(self) -> None:
         """Install AWS CLI v2 using the official installer."""
-        # TODO: detect OS and install the appropriate package
+        os_name = platform.system()
+
         try:
             # Create a temp dir to install this.
             os.mkdir("./tmp_aws_cli")
 
-            # Download the AWS CLI package into the temporary directory
-            subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.pkg", "-o", "./tmp_aws_cli/AWSCLIV2.pkg"])
+            if os_name == "Darwin":
+                # Download the AWS CLI package into the temporary directory
+                subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.pkg", "-o", "./tmp_aws_cli/AWSCLIV2.pkg"])
 
-            # Install AWS CLI
-            subprocess.run(["sudo", "installer", "-pkg", "./tmp_aws_cli/AWSCLIV2.pkg", "-target", "/"])
+                # Install AWS CLI
+                subprocess.run(["sudo", "installer", "-pkg", "./tmp_aws_cli/AWSCLIV2.pkg", "-target", "/"])
+            elif os_name == "Linux":
+                # Download the AWS CLI package into the temporary directory
+                subprocess.run(["curl", "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip", "-o", "./tmp_aws_cli/awscliv2.zip"])
 
-            shutil.rmtree("./tmp_aws_cli")
+                # Install AWS CLI
+                subprocess.run(["unzip", "./tmp_aws_cli/awscliv2.zip", "-d", "./tmp_aws_cli"])
+                subprocess.run(["sudo", "./tmp_aws_cli/aws/install"])
+            elif os_name == "Windows":
+                # Download the AWS CLI package into the temporary directory
+                subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.msi", "-o", "./tmp_aws_cli/AWSCLIV2.msi"])
+
+                # Install AWS CLI
+                subprocess.run(["msiexec", "/i", "./tmp_aws_cli/AWSCLIV2.msi", "/quiet"])
+            else:
+                logging.error(f"Unsupported OS: {os_name}")
+
+                shutil.rmtree("./tmp_aws_cli")
         except Exception as err:
             logging.error(f"Failed to install AWS CLI v2: {err}")
 

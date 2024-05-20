@@ -2,7 +2,7 @@
 name = "aws-stuff-doer"
 version = "0.1.0"
 description = "ASD is a utility to help manage your AWS projects and sso sessions."
-authors = ["Aaron West <aphexlog@gmail.com>"]
+authors = ["Aaron West <aphexlog@gmail.com>", "ant <anthony.chiarello132@gmail.com>"]
 repository = "https://github.com/aphexlog/aws-stuff-doer"
 license = "MIT"
 readme = "README.md"
