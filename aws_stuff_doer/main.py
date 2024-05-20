@@ -1,7 +1,7 @@
 import argparse
 import logging
-from cmd.get_version import get_version
-from cmd.login import AWSAuthenticator
+from .cmd.get_version import get_version
+from .cmd.login import AWSAuthenticator
 
 
 def get_profiles():
