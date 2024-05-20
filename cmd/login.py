@@ -74,8 +74,8 @@ class AWSAuthenticator:
                 profile_section = f"profile {self.profile}"
                 account_id = config.get(profile_section, "sso_account_id")
                 role_name = config.get(profile_section, "sso_role_name")
-                session_name = config.get(profile_section, "sso_session")
-                account_url = f"https://{session_name}.awsapps.com/start/#/console?account_id={account_id}&role_name={role_name}"
+                sso_start_url = self.get_sso_url_from_profile()
+                account_url = f"{sso_start_url}/#/console?account_id={account_id}&role_name={role_name}"
                 return account_url
             except configparser.NoSectionError:
                 logging.error("Could not find the necessary account configuration.")
