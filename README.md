@@ -1,69 +1,43 @@
-# aws-stuff-doer: an inteactive CLI to help manage your AWS projects and sso sessions.
+# aws-stuff-doer: An Interactive CLI to Manage Your AWS Projects and SSO Sessions
 
 [![PyPI version](https://badge.fury.io/py/aws-stuff-doer.svg)](https://badge.fury.io/py/aws-stuff-doer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-ASD is a simple and effective tool for managing AWS Single Sign-On (SSO). Tailored for both developers and administrators, ASD offers an easy way to streamline your AWS SSO process, including running custom shell commands with specific profiles and exporting temporary AWS credentials.
+**AWS Stuff Doer (ASD)** is your go-to tool for managing AWS Single Sign-On (SSO). Designed for both developers and administrators, ASD simplifies your AWS SSO workflow, allowing you to run custom shell commands with specific profiles and export temporary AWS credentials seamlessly.
 
 ## Features
 
-- **Easy Integration**: Seamlessly integrate with existing AWS infrastructure.
-- **Secure Authentication**: Enhance security with robust SSO capabilities.
-- **Customizable**: Extend and adapt ASD to suit your specific needs.
-- **Run Custom Commands**: Execute shell commands with AWS profiles and export temporary credentials in memory.
+- **Easy Integration**: Effortlessly integrate with your existing AWS infrastructure.
+- **Secure Authentication**: Improve security with robust SSO capabilities.
+- **Customizable**: Tailor ASD to meet your unique requirements.
+- **Run Custom Commands**: Execute shell commands using AWS profiles and export temporary credentials securely in memory.
 - **Temporary AWS Credentials**: Access temporary AWS credentials specific to a profile, securely available in memory.
 
 ## Installation
 
-You can install ASD via pip:
+Install ASD using pip:
 
 ```bash
 pip install aws-stuff-doer
 ```
-```
 
 ## Usage
 
-Getting started with ASD is easy:
+Invoke ASD with the following command syntax:
 
-To generate temporary AWS credentials for a specific profile:
 ```bash
-asd -p <profile_name>
-```
-This will generate temporary AWS credentials for the specified profile and store them in the ~/.aws/credentials file.
-
-To open your AWS console in a browser session:
-```bash
-asd <your_command_here> --profile <profile_name> --console
+asd [-h] [-p PROFILE] [--open-sso] [--open] [-l] [--version] [command ...]
 ```
 
-To get help:
-```bash
-asd --help
-```
-or
-```bash
-go see a therapist.
-```
+**ASD**: The AWS Utility to manage AWS SSO and AWS CLI profiles conveniently.
 
-The project is available on [pypip](https://pypi.org/project/aws-stuff-doer/).
+### Positional Arguments:
+- **command**: Command followed by its arguments to run in the shell
 
-## Contributing
-
-Contributions are welcome! Check out the [issues](https://github.com/aphexlog/aws-stuff-doer/issues) or submit a pull request.
-
-## License
-
-aws-stuff-doer is released under the [MIT License](https://github.com/aphexlog/aws-stuff-doer/blob/main/LICENSE).
-
----
-
-Feel free to reach out with questions, suggestions, or just to say hello. Happy coding!
-
-## Contact Information
-- **Author**: Aaron West
-- **Email**: aphexlog@gmail.com
-
----
-
-Thank you for your interest in aws-stuff-doer! Follow the project on [GitHub](https://github.com/aphexlog/aws-stuff-doer) for the latest updates...
+### Options:
+- **-h, --help**: Show this help message and exit
+- **-p PROFILE, --profile PROFILE**: Specify AWS profile name
+- **--open-sso**: Open AWS SSO user console
+- **--open**: Open AWS account console
+- **-l, --list**: List available profiles
+- **--version**: Show program's version number and exit

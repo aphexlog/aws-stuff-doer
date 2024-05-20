@@ -19,7 +19,7 @@ logging.getLogger("botocore").setLevel(logging.ERROR)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="ASD: An AWS Utility to help manage your projects and sso sessions.",
+        description="ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles"
     )
     parser.add_argument("-p", "--profile", help="AWS profile name")
     parser.add_argument("--open-sso", action="store_true", help="Open AWS SSO user console")
@@ -27,7 +27,6 @@ def main():
     parser.add_argument("-l", "--list", action="store_true", help="List available profiles")
     parser.add_argument("command", nargs="*", help="Command followed by its arguments to run in the shell")
     parser.add_argument("--version", action="version", version=f"%(prog)s {get_version()}")
-    parser.add_argument("--debug", action="store_true", help="Print debug information")
 
     args = parser.parse_args()
 
