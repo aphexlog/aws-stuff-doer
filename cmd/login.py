@@ -52,7 +52,6 @@ class AWSAuthenticator:
         except Exception as err:
             if err.__class__.__name__ == "FileNotFoundError":
                 logging.error("AWS CLI v2 is required for SSO authentication.")
-                # TODO: Install AWS CLI v2
                 self.install_aws_cli_v2()
                 logging.info("AWS CLI v2 has been installed.")
                 return False
@@ -63,15 +62,16 @@ class AWSAuthenticator:
         """Install AWS CLI v2 using the official installer."""
         # TODO: detect OS and install the appropriate package
         try:
-            os.mkdir("./tmp")
+            # Create a temp dir to install this.
+            os.mkdir("./tmp_aws_cli")
+
             # Download the AWS CLI package into the temporary directory
-            subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.pkg", "-o", "./tmp/AWSCLIV2.pkg"])
+            subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.pkg", "-o", "./tmp_aws_cli/AWSCLIV2.pkg"])
 
             # Install AWS CLI
-            subprocess.run(["sudo", "installer", "-pkg", "./tmp/AWSCLIV2.pkg", "-target", "/"])
+            subprocess.run(["sudo", "installer", "-pkg", "./tmp_aws_cli/AWSCLIV2.pkg", "-target", "/"])
 
-            shutil.rmtree("./tmp")
-            shutil.rmtree("./aws")
+            shutil.rmtree("./tmp_aws_cli")
         except Exception as err:
             logging.error(f"Failed to install AWS CLI v2: {err}")
 
