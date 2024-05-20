@@ -6,10 +6,10 @@ import logging
 import configparser
 from botocore.exceptions import TokenRetrievalError
 
-# Configure logging as before
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname=s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logging.getLogger("botocore").setLevel(logging.ERROR)
@@ -23,7 +23,7 @@ class AWSAuthenticator:
         self.config_path = Path.home() / ".aws" / "config"
         self.credentials_path = Path.home() / ".aws" / "credentials"
         self.session = boto3.Session(profile_name=profile)
-        self.client = self.session.client("sts") # type: ignore
+        self.client = self.session.client("sts")  # type: ignore
 
     def sso_credentials_exist(self) -> bool:
         try:
@@ -38,6 +38,7 @@ class AWSAuthenticator:
             logging.info(f"Already authenticated SSO for profile {self.profile}")
             self.export_temporary_aws_credentials()
             return True
+
         try:
             command = ["aws", "sso", "login", "--profile", self.profile]
             subprocess.run(command, check=True)
@@ -45,11 +46,10 @@ class AWSAuthenticator:
             self.export_temporary_aws_credentials()
             return True
         except subprocess.CalledProcessError as err:
-            logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
+            logging.error(f"SSO authentication error for profile {self.profile}: {err}")
         except Exception as err:
-            logging.error(f"An error occurred during SSO authentication for profile {self.profile}: {err}")
+            logging.error(f"SSO authentication error for profile {self.profile}: {err}")
         return False
-
 
     def get_sso_url_from_profile(self) -> Optional[str]:
         """Get the SSO start URL from the AWS profile configuration."""
@@ -59,7 +59,6 @@ class AWSAuthenticator:
             try:
                 sso_session = config.get(f"profile {self.profile}", "sso_session")
                 sso_start_url = config.get(f"sso-session {sso_session}", "sso_start_url")
-                print(sso_start_url)
                 return sso_start_url
             except configparser.NoSectionError:
                 logging.error("Could not find the necessary SSO configuration.")
@@ -72,20 +71,22 @@ class AWSAuthenticator:
         if self.config_path.exists():
             config.read(self.config_path)
             try:
-                orofile = f"profile {self.profile}"
-                account_id = config.get(orofile, "sso_account_id")
-                role_name = config.get(orofile, "sso_role_name")
-                account_url = f"https://aphexlog.awsapps.com/start/#/console?account_id={account_id}&role_name={role_name}"
+                profile_section = f"profile {self.profile}"
+                account_id = config.get(profile_section, "sso_account_id")
+                role_name = config.get(profile_section, "sso_role_name")
+                session_name = config.get(profile_section, "sso_session")
+                account_url = f"https://{session_name}.awsapps.com/start/#/console?account_id={account_id}&role_name={role_name}"
                 return account_url
             except configparser.NoSectionError:
                 logging.error("Could not find the necessary account configuration.")
                 return None
+        return None
 
     def export_temporary_aws_credentials(self) -> bool:
         """Export temporary AWS credentials to the default profile in ~/.aws/credentials."""
         try:
             session = boto3.Session(profile_name=self.profile)
-            credentials = session.get_credentials().get_frozen_credentials() # type: ignore
+            credentials = session.get_credentials().get_frozen_credentials()  # type: ignore
 
             config = configparser.ConfigParser()
             if self.credentials_path.exists():
@@ -100,7 +101,7 @@ class AWSAuthenticator:
             with open(self.credentials_path, "w") as f:
                 config.write(f)
 
-            logging.info("Temporary AWS credentials have been written to the default profile in ~/.aws/credentials")
+            logging.info("Temporary AWS credentials written to the default profile in ~/.aws/credentials")
             return True
         except Exception as err:
             logging.error(f"Failed to export temporary AWS credentials: {err}")
