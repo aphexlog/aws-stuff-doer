@@ -1,7 +1,5 @@
 import argparse
 import logging
-import sys
-sys.path.insert(0, 'cmd')
 from cmd.get_version import get_version
 from cmd.login import AWSAuthenticator
 

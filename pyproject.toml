@@ -9,7 +9,10 @@ authors = [
 repository = "https://github.com/aphexlog/aws-stuff-doer"
 license = "MIT"
 readme = "README.md"
-packages = [{ from = ".", include = "main.py" }]
+packages = [
+    { from = ".", include = "main.py" },
+    { from = "cmd", include = "*" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
