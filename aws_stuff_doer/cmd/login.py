@@ -8,11 +8,12 @@ import boto3
 import logging
 import configparser
 from botocore.exceptions import TokenRetrievalError
+from mypy_boto3_sts import STSClient
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname=s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logging.getLogger("botocore").setLevel(logging.ERROR)
@@ -26,7 +27,7 @@ class AWSAuthenticator:
         self.config_path = Path.home() / ".aws" / "config"
         self.credentials_path = Path.home() / ".aws" / "credentials"
         self.session = boto3.Session(profile_name=profile)
-        self.client = self.session.client("sts")  # type: ignore
+        self.client: STSClient = self.session.client("sts")  # type: ignore
 
     def sso_credentials_exist(self) -> bool:
         try:
