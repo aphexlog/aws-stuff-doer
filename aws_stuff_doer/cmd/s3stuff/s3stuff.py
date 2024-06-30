@@ -38,7 +38,6 @@ class S3App(App): # type: ignore
 
     BINDINGS = [
         ("Q", "quit", "Quit"),
-        ("d", "toggle_dark", "Toggle dark mode"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -46,10 +45,6 @@ class S3App(App): # type: ignore
         yield Header(show_clock=True, time_format="%H:%M:%S")
         yield ListView()
         yield Footer()
-
-    def action_toggle_dark(self):
-        """An action to toggle dark mode"""
-        self.dark = not self.dark
 
     def on_mount(self) -> None:
         """Event handler called when the app is mounted"""
@@ -59,14 +54,18 @@ class S3App(App): # type: ignore
         """List all S3 buckets"""
         s3_manager = S3Manager()
         response = s3_manager.list_buckets()
+        list_view = self.query_one(ListView)
+        list_view.clear()  # Clear the list view first
         if response is not None:
             buckets = response.get("Buckets", [])
-            list_view = self.query_one(ListView)
             for bucket in buckets:
-                list_item = ListItem(Label(bucket["Name"]))
+                bucket_name = bucket.get("Name", "")
+                list_item = ListItem(Label(bucket_name))
                 list_view.append(list_item)
         else:
             logging.error("Failed to retrieve buckets")
+            list_item = ListItem(Label("Failed to retrieve buckets"))
+            list_view.append(list_item)
 
 
 if __name__ == "__main__":
