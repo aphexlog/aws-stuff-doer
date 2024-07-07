@@ -1,14 +1,16 @@
 """A Textual app to handle s3 bucket operations"""
+from typing_extensions import get_origin
 import boto3
 import logging
 from typing import Optional
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
-from pkg_resources import yield_lines
+from textual import events
+from textual.layouts import grid
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingType
-from textual.widgets import Header, Footer, ListItem, ListView, Label, Select, _list_view
+from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog
 
 # Configure logging
 logging.basicConfig(
@@ -23,9 +25,6 @@ client: S3Client = boto3.client("s3")  # type: ignore
 
 class S3Manager:
     """Handles S3 Bucket Operations"""
-
-    # def __init__(self, bucket_name: str):
-        # self.bucket_name = bucket_name
 
     def list_buckets(self):
         try:
@@ -79,7 +78,6 @@ class S3App(App): # type: ignore
         Binding("up", "cursor_up", "Cursor Up", show=False),
         Binding("down", "cursor_down", "Cursor Down", show=False),
         Binding("Q", "quit", "Quit"),
-        # Binding("l", "list_objects", "List Objects")
         Binding("D", "delete_bucket", "Delete Bucket"),
     ]
 
@@ -87,7 +85,8 @@ class S3App(App): # type: ignore
         """Create children widgets for the app"""
         yield Header(show_clock=True, time_format="%H:%M:%S")
         yield ListView()
-        yield Label("Press 'l' to list objects in the selected bucket")
+        yield RichLog(auto_scroll=True)
+        yield Input(placeholder="Confirm deletion (y/n)", name="confirm_delete")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -128,23 +127,18 @@ class S3App(App): # type: ignore
         selected_item = list_view.index
         if selected_item is not None:
             selected_bucket = list_view.children[selected_item].children[0].render()
-            s3_manager = S3Manager()
-            response = s3_manager.delete_bucket(str(selected_bucket))
-            if response is not None:
-                logging.info(f"Deleted bucket: {selected_bucket}")
-                self.list_buckets()
-
-
-    # def list_objects(self, bucket_name: Optional[str] = None):
-    #     """List objects in the currently selected bucket"""
-    #     list_view = self.query_one(ListView)
-    #     s3_manager = S3Manager()
-    #     s3_objects: list[ListItem] = s3_manager.list_objects(bucket_name)
-    #     objects = s3_objects.get("Contents", [])
-    #     for obj in objects:
-    #         obj_key = obj.get("Key", "")
-    #         list_item = ListItem(Label(obj_key))
-    #         list_view.append(list_item)
+            logging.info(f"Attempting to delete bucket: {selected_bucket}")
+            confirm_input = self.query_one(Input)
+            if confirm_input.value.lower() == "y":
+                s3_manager = S3Manager()
+                response = s3_manager.delete_bucket(str(selected_bucket))
+                if response is not None:
+                    logging.info(f"Deleted bucket: {selected_bucket}")
+                    self.list_buckets()
+                else:
+                    logging.error(f"Failed to delete bucket: {selected_bucket}")
+            else:
+                logging.info("Deletion canceled")
 
 if __name__ == "__main__":
     S3App().run()
