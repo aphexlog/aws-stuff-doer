@@ -5,8 +5,10 @@ from typing import Optional
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
-from textual.app import App, ComposeResult, Logger
-from textual.widgets import Header, Footer, ListItem, ListView, Label
+from pkg_resources import yield_lines
+from textual.app import App, ComposeResult
+from textual.binding import Binding, BindingType
+from textual.widgets import Header, Footer, ListItem, ListView, Label, Select, _list_view
 
 # Configure logging
 logging.basicConfig(
@@ -33,17 +35,59 @@ class S3Manager:
             logging.error(f"Error listing buckets: {err}")
         return None
 
+    def list_objects(self, bucket_name: str):
+        try:
+            response: ListObjectsV2OutputTypeDef = client.list_objects_v2(Bucket=bucket_name)
+            return response
+        except client.exceptions.ClientError as err:
+            logging.error(f"Error listing objects in bucket {bucket_name}: {err}")
+        return None
+
+    def delete_bucket(self, bucket_name: str):
+        try:
+            response = client.delete_bucket(Bucket=bucket_name)
+            return response
+        except client.exceptions.ClientError as err:
+            if err.response['Error']['Code'] == 'BucketNotEmpty':
+                logging.info(f"Bucket {bucket_name} is not empty. Emptying it now...")
+                self.empty_bucket(bucket_name)
+                response = client.delete_bucket(Bucket=bucket_name)
+                return response
+            logging.error(f"Error deleting bucket {bucket_name}: {err}")
+        return None
+
+    def empty_bucket(self, bucket_name: str):
+        paginator = client.get_paginator('list_object_versions')
+        for page in paginator.paginate(Bucket=bucket_name):
+            versions = page.get('Versions', []) + page.get('DeleteMarkers', [])
+            for version in versions:
+                client.delete_object(Bucket=bucket_name, Key=version['Key'], VersionId=version['VersionId'])
+
 class S3App(App): # type: ignore
     """Textual App to handle S3 Bucket Operations"""
 
-    BINDINGS = [
-        ("Q", "quit", "Quit"),
+    def __init__(self):
+        super().__init__()
+        textual_logger = logging.getLogger("textual")
+        file_handler = logging.FileHandler("textual.log")
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+        textual_logger.addHandler(file_handler)
+
+    BINDINGS: list[BindingType] = [
+        Binding("enter", "select_cursor", "Select", show=False),
+        Binding("up", "cursor_up", "Cursor Up", show=False),
+        Binding("down", "cursor_down", "Cursor Down", show=False),
+        Binding("Q", "quit", "Quit"),
+        # Binding("l", "list_objects", "List Objects")
+        Binding("D", "delete_bucket", "Delete Bucket"),
     ]
 
     def compose(self) -> ComposeResult:
         """Create children widgets for the app"""
         yield Header(show_clock=True, time_format="%H:%M:%S")
         yield ListView()
+        yield Label("Press 'l' to list objects in the selected bucket")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -67,6 +111,40 @@ class S3App(App): # type: ignore
             list_item = ListItem(Label("Failed to retrieve buckets"))
             list_view.append(list_item)
 
+    def action_select(self) -> None:
+        """Event handler for selecting an item"""
+        list_view = self.query_one(ListView)
+        selected_item = list_view.index
+        if selected_item is not None:
+            selected_bucket = list_view.children[selected_item].children[0].render()
+            logging.info(f"Selected bucket: {selected_bucket}")
+            # self.list_objects(selected_bucket)
+        else:
+            logging.error("No bucket selected")
+
+    def action_delete_bucket(self) -> None:
+        """Delete the selected bucket"""
+        list_view = self.query_one(ListView)
+        selected_item = list_view.index
+        if selected_item is not None:
+            selected_bucket = list_view.children[selected_item].children[0].render()
+            s3_manager = S3Manager()
+            response = s3_manager.delete_bucket(str(selected_bucket))
+            if response is not None:
+                logging.info(f"Deleted bucket: {selected_bucket}")
+                self.list_buckets()
+
+
+    # def list_objects(self, bucket_name: Optional[str] = None):
+    #     """List objects in the currently selected bucket"""
+    #     list_view = self.query_one(ListView)
+    #     s3_manager = S3Manager()
+    #     s3_objects: list[ListItem] = s3_manager.list_objects(bucket_name)
+    #     objects = s3_objects.get("Contents", [])
+    #     for obj in objects:
+    #         obj_key = obj.get("Key", "")
+    #         list_item = ListItem(Label(obj_key))
+    #         list_view.append(list_item)
 
 if __name__ == "__main__":
     S3App().run()
