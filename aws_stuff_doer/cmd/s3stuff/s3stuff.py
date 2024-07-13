@@ -1,5 +1,4 @@
 """A Textual app to handle s3 bucket operations"""
-from typing_extensions import get_origin
 import boto3
 import logging
 from typing import Optional
@@ -72,8 +71,10 @@ class S3App(App): # type: ignore
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
         textual_logger.addHandler(file_handler)
+        self.confirm_delete_input = Input(placeholder="Confirm deletion (y/n)", name="confirm_delete")
+        self.selected_bucket = None
 
-    BINDINGS: list[BindingType] = [
+    BINDINGS = [
         Binding("enter", "select_cursor", "Select", show=False),
         Binding("up", "cursor_up", "Cursor Up", show=False),
         Binding("down", "cursor_down", "Cursor Down", show=False),
@@ -85,8 +86,6 @@ class S3App(App): # type: ignore
         """Create children widgets for the app"""
         yield Header(show_clock=True, time_format="%H:%M:%S")
         yield ListView()
-        yield RichLog(auto_scroll=True)
-        yield Input(placeholder="Confirm deletion (y/n)", name="confirm_delete")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -110,7 +109,7 @@ class S3App(App): # type: ignore
             list_item = ListItem(Label("Failed to retrieve buckets"))
             list_view.append(list_item)
 
-    def action_select(self) -> None:
+    def action_select_cursor(self) -> None:
         """Event handler for selecting an item"""
         list_view = self.query_one(ListView)
         selected_item = list_view.index
@@ -126,19 +125,28 @@ class S3App(App): # type: ignore
         list_view = self.query_one(ListView)
         selected_item = list_view.index
         if selected_item is not None:
-            selected_bucket = list_view.children[selected_item].children[0].render()
-            logging.info(f"Attempting to delete bucket: {selected_bucket}")
+            self.selected_bucket = list_view.children[selected_item].children[0].render()
+            logging.info(f"Attempting to delete bucket: {self.selected_bucket}")
+            if not self.query("Input"):
+                self.mount(self.confirm_delete_input)
+            self.set_focus(self.confirm_delete_input)
+
+    async def on_input_submitted(self, message: Input.Submitted) -> None:
+        """Handle the input confirmation for deletion"""
+        if message.input.name == "confirm_delete":
             confirm_input = self.query_one(Input)
             if confirm_input.value.lower() == "y":
                 s3_manager = S3Manager()
-                response = s3_manager.delete_bucket(str(selected_bucket))
+                response = s3_manager.delete_bucket(str(self.selected_bucket))
                 if response is not None:
-                    logging.info(f"Deleted bucket: {selected_bucket}")
+                    logging.info(f"Deleted bucket: {self.selected_bucket}")
                     self.list_buckets()
                 else:
-                    logging.error(f"Failed to delete bucket: {selected_bucket}")
+                    logging.error(f"Failed to delete bucket: {self.selected_bucket}")
             else:
                 logging.info("Deletion canceled")
+            await confirm_input.remove()
+            self.set_focus(self.query_one(ListView))
 
 if __name__ == "__main__":
     S3App().run()
