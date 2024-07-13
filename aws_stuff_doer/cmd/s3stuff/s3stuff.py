@@ -1,14 +1,11 @@
 """A Textual app to handle s3 bucket operations"""
 import boto3
 import logging
-from typing import Optional
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
-from textual import events
-from textual.layouts import grid
 from textual.app import App, ComposeResult
-from textual.binding import Binding, BindingType
+from textual.binding import Binding
 from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog
 
 # Configure logging
@@ -63,14 +60,10 @@ class S3Manager:
 
 class S3App(App): # type: ignore
     """Textual App to handle S3 Bucket Operations"""
+    CSS_PATH = "s3app.css"
 
     def __init__(self):
         super().__init__()
-        textual_logger = logging.getLogger("textual")
-        file_handler = logging.FileHandler("textual.log")
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
-        textual_logger.addHandler(file_handler)
         self.confirm_delete_input = Input(placeholder="Confirm deletion (y/n)", name="confirm_delete")
         self.selected_bucket = None
 
@@ -85,7 +78,8 @@ class S3App(App): # type: ignore
     def compose(self) -> ComposeResult:
         """Create children widgets for the app"""
         yield Header(show_clock=True, time_format="%H:%M:%S")
-        yield ListView()
+        yield ListView(classes="box")
+        yield RichLog(classes="box", name="rich_log")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -105,7 +99,7 @@ class S3App(App): # type: ignore
                 list_item = ListItem(Label(bucket_name))
                 list_view.append(list_item)
         else:
-            logging.error("Failed to retrieve buckets")
+            self.log_to_rich("Failed to retrieve buckets", level="error")
             list_item = ListItem(Label("Failed to retrieve buckets"))
             list_view.append(list_item)
 
@@ -115,10 +109,10 @@ class S3App(App): # type: ignore
         selected_item = list_view.index
         if selected_item is not None:
             selected_bucket = list_view.children[selected_item].children[0].render()
-            logging.info(f"Selected bucket: {selected_bucket}")
+            self.log_to_rich(f"Selected bucket: {selected_bucket}", level="info")
             # self.list_objects(selected_bucket)
         else:
-            logging.error("No bucket selected")
+            self.log_to_rich("No bucket selected", level="error")
 
     def action_delete_bucket(self) -> None:
         """Delete the selected bucket"""
@@ -126,7 +120,7 @@ class S3App(App): # type: ignore
         selected_item = list_view.index
         if selected_item is not None:
             self.selected_bucket = list_view.children[selected_item].children[0].render()
-            logging.info(f"Attempting to delete bucket: {self.selected_bucket}")
+            self.log_to_rich(f"Attempting to delete bucket: {self.selected_bucket}", level="info")
             if not self.query("Input"):
                 self.mount(self.confirm_delete_input)
             self.set_focus(self.confirm_delete_input)
@@ -139,14 +133,23 @@ class S3App(App): # type: ignore
                 s3_manager = S3Manager()
                 response = s3_manager.delete_bucket(str(self.selected_bucket))
                 if response is not None:
-                    logging.info(f"Deleted bucket: {self.selected_bucket}")
+                    self.log_to_rich(f"Deleted bucket: {self.selected_bucket}", level="info")
                     self.list_buckets()
                 else:
-                    logging.error(f"Failed to delete bucket: {self.selected_bucket}")
+                    self.log_to_rich(f"Failed to delete bucket: {self.selected_bucket}", level="error")
             else:
-                logging.info("Deletion canceled")
+                self.log_to_rich("Deletion canceled", level="info")
             await confirm_input.remove()
             self.set_focus(self.query_one(ListView))
 
-if __name__ == "__main__":
-    S3App().run()
+    def log_to_rich(self, message: str, level: str = "info"):
+        """Log messages to the RichLog widget"""
+        rich_log = self.query_one(RichLog)
+        if level == "info":
+            rich_log.write(f"[INFO] {message}")
+        elif level == "error":
+            rich_log.write(f"[ERROR] {message}")
+        elif level == "warning":
+            rich_log.write(f"[WARNING] {message}")
+        else:
+            rich_log.write(f"[LOG] {message}")
