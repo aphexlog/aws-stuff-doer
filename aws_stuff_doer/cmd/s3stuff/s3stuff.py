@@ -6,7 +6,9 @@ from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog
+from textual.screen import ModalScreen
+from textual.containers import Container
+from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog, Static
 
 # Configure logging
 logging.basicConfig(
@@ -18,6 +20,27 @@ logging.basicConfig(
 logging.getLogger("botocore").setLevel(logging.ERROR)
 
 client: S3Client = boto3.client("s3")  # type: ignore
+
+class ConfirmDeleteInput(Input):
+    """A Modal Input Widget"""
+    DEFAULT_CSS = """
+    Input {
+        border: solid;
+        margin-bottom: 0;
+        width: 100%;
+        background: black;
+        color: white;
+    }
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.focus()
+
+    def on_mount(self):
+        self.app.set_focus(self)
+
+    def on_blur(self):
+        self.app.set_focus(self)
 
 class S3Manager:
     """Handles S3 Bucket Operations"""
@@ -64,7 +87,6 @@ class S3App(App): # type: ignore
 
     def __init__(self):
         super().__init__()
-        self.confirm_delete_input = Input(placeholder="Confirm deletion (y/n)", name="confirm_delete")
         self.selected_bucket = None
 
     BINDINGS = [
@@ -85,6 +107,8 @@ class S3App(App): # type: ignore
     def on_mount(self) -> None:
         """Event handler called when the app is mounted"""
         self.list_buckets()
+        self.query_one(RichLog).visible = True  # Ensure RichLog is visible
+        self.set_focus(self.query_one(ListView))  # Set initial focus to
 
     def list_buckets(self):
         """List all S3 buckets"""
@@ -110,7 +134,6 @@ class S3App(App): # type: ignore
         if selected_item is not None:
             selected_bucket = list_view.children[selected_item].children[0].render()
             self.log_to_rich(f"Selected bucket: {selected_bucket}", level="info")
-            # self.list_objects(selected_bucket)
         else:
             self.log_to_rich("No bucket selected", level="error")
 
@@ -122,8 +145,13 @@ class S3App(App): # type: ignore
             self.selected_bucket = list_view.children[selected_item].children[0].render()
             self.log_to_rich(f"Attempting to delete bucket: {self.selected_bucket}", level="info")
             if not self.query("Input"):
-                self.mount(self.confirm_delete_input)
-            self.set_focus(self.confirm_delete_input)
+                bucket_name = self.selected_bucket
+                self.log_to_rich("We are here", level="info")
+                # confirm_input = ConfirmDeleteInput(name="confirm_delete")
+                confirm_input = ConfirmDeleteInput(name="confirm_delete", placeholder="Type 'y' to confirm deletion")
+                self.mount(confirm_input)
+                self.set_focus(confirm_input)
+
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
         """Handle the input confirmation for deletion"""
