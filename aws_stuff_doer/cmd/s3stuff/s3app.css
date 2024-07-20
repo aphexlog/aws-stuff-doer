@@ -1,9 +1,27 @@
 Screen {
-    layout: horizontal;
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 50% 50% 100%;
+    grid-rows: 1fr auto;
+}
+
+#terminal {
+    column-span: 10;
+}
+
+Input {
+    height: 100%;
+}
+
+Label {
+}
+
+Pretty {
+    margin: 1 2;
 }
 
 .box {
     height: 100%;
     width: 1fr;
-    border: solid green;
+    border: solid blueviolet;
 }

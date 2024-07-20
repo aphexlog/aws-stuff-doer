@@ -4,10 +4,9 @@ import logging
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
+from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.screen import ModalScreen
-from textual.containers import Container
 from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog, Static
 
 # Configure logging
@@ -20,27 +19,6 @@ logging.basicConfig(
 logging.getLogger("botocore").setLevel(logging.ERROR)
 
 client: S3Client = boto3.client("s3")  # type: ignore
-
-class ConfirmDeleteInput(Input):
-    """A Modal Input Widget"""
-    DEFAULT_CSS = """
-    Input {
-        border: solid;
-        margin-bottom: 0;
-        width: 100%;
-        background: black;
-        color: white;
-    }
-    """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.focus()
-
-    def on_mount(self):
-        self.app.set_focus(self)
-
-    def on_blur(self):
-        self.app.set_focus(self)
 
 class S3Manager:
     """Handles S3 Bucket Operations"""
@@ -102,6 +80,7 @@ class S3App(App): # type: ignore
         yield Header(show_clock=True, time_format="%H:%M:%S")
         yield ListView(classes="box")
         yield RichLog(classes="box", name="rich_log")
+        # yield Input(name="input", id="terminal", classes="box")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -144,13 +123,12 @@ class S3App(App): # type: ignore
         if selected_item is not None:
             self.selected_bucket = list_view.children[selected_item].children[0].render()
             self.log_to_rich(f"Attempting to delete bucket: {self.selected_bucket}", level="info")
-            if not self.query("Input"):
-                bucket_name = self.selected_bucket
-                self.log_to_rich("We are here", level="info")
-                # confirm_input = ConfirmDeleteInput(name="confirm_delete")
-                confirm_input = ConfirmDeleteInput(name="confirm_delete", placeholder="Type 'y' to confirm deletion")
-                self.mount(confirm_input)
-                self.set_focus(confirm_input)
+            self.mount(Input(name="confirm_delete", id="terminal", classes="box"))
+            self.set_focus(self.query_one(Input))
+            self.query_one(Input).value = ""
+            self.query_one(Input).placeholder = "Type 'y' to confirm deletion"
+        else:
+            self.log_to_rich("No bucket selected", level="error")
 
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
