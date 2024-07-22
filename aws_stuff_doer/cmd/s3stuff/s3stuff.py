@@ -7,7 +7,7 @@ from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog, Static
+from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog
 
 # Configure logging
 logging.basicConfig(
@@ -20,44 +20,18 @@ logging.getLogger("botocore").setLevel(logging.ERROR)
 
 client: S3Client = boto3.client("s3")  # type: ignore
 
-class S3Manager:
-    """Handles S3 Bucket Operations"""
+class RichLogger:
+    def __init__(self, rich_log: RichLog):
+        self.rich_log = rich_log
 
-    def list_buckets(self):
-        try:
-            response = client.list_buckets()
-            return response
-        except client.exceptions.ClientError as err:
-            logging.error(f"Error listing buckets: {err}")
-        return None
+    def info(self, message: str):
+        self.rich_log.write(f"[INFO] {message}")
 
-    def list_objects(self, bucket_name: str):
-        try:
-            response: ListObjectsV2OutputTypeDef = client.list_objects_v2(Bucket=bucket_name)
-            return response
-        except client.exceptions.ClientError as err:
-            logging.error(f"Error listing objects in bucket {bucket_name}: {err}")
-        return None
+    def error(self, message: str):
+        self.rich_log.write(f"[ERROR] {message}")
 
-    def delete_bucket(self, bucket_name: str):
-        try:
-            response = client.delete_bucket(Bucket=bucket_name)
-            return response
-        except client.exceptions.ClientError as err:
-            if err.response['Error']['Code'] == 'BucketNotEmpty':
-                logging.info(f"Bucket {bucket_name} is not empty. Emptying it now...")
-                self.empty_bucket(bucket_name)
-                response = client.delete_bucket(Bucket=bucket_name)
-                return response
-            logging.error(f"Error deleting bucket {bucket_name}: {err}")
-        return None
-
-    def empty_bucket(self, bucket_name: str):
-        paginator = client.get_paginator('list_object_versions')
-        for page in paginator.paginate(Bucket=bucket_name):
-            versions = page.get('Versions', []) + page.get('DeleteMarkers', [])
-            for version in versions:
-                client.delete_object(Bucket=bucket_name, Key=version['Key'], VersionId=version['VersionId'])
+    def warning(self, message: str):
+        self.rich_log.write(f"[WARNING] {message}")
 
 class S3App(App): # type: ignore
     """Textual App to handle S3 Bucket Operations"""
@@ -80,31 +54,64 @@ class S3App(App): # type: ignore
         yield Header(show_clock=True, time_format="%H:%M:%S")
         yield ListView(classes="box")
         yield RichLog(classes="box", name="rich_log")
-        # yield Input(name="input", id="terminal", classes="box")
         yield Footer()
 
     def on_mount(self) -> None:
         """Event handler called when the app is mounted"""
+        self.rich_logger = RichLogger(self.query_one(RichLog))
         self.list_buckets()
         self.query_one(RichLog).visible = True  # Ensure RichLog is visible
         self.set_focus(self.query_one(ListView))  # Set initial focus to
 
     def list_buckets(self):
         """List all S3 buckets"""
-        s3_manager = S3Manager()
-        response = s3_manager.list_buckets()
-        list_view = self.query_one(ListView)
-        list_view.clear()  # Clear the list view first
-        if response is not None:
+        try:
+            response = client.list_buckets()
+            list_view = self.query_one(ListView)
+            list_view.clear()  # Clear the list view first
             buckets = response.get("Buckets", [])
             for bucket in buckets:
                 bucket_name = bucket.get("Name", "")
                 list_item = ListItem(Label(bucket_name))
                 list_view.append(list_item)
-        else:
-            self.log_to_rich("Failed to retrieve buckets", level="error")
-            list_item = ListItem(Label("Failed to retrieve buckets"))
-            list_view.append(list_item)
+        except client.exceptions.ClientError as err:
+            self.rich_logger.error(f"Error listing buckets: {err}")
+
+    def list_objects(self, bucket_name: str):
+        """List objects in a specific S3 bucket"""
+        try:
+            response: ListObjectsV2OutputTypeDef = client.list_objects_v2(Bucket=bucket_name)
+            return response
+        except client.exceptions.ClientError as err:
+            self.rich_logger.error(f"Error listing objects in bucket {bucket_name}: {err}")
+        return None
+
+    def delete_bucket(self, bucket_name: str):
+        """Delete a specific S3 bucket"""
+        try:
+            response = client.delete_bucket(Bucket=bucket_name)
+            return response
+        except client.exceptions.ClientError as err:
+            if err.response['Error']['Code'] == 'BucketNotEmpty':
+                self.rich_logger.info(f"Bucket {bucket_name} is not empty. Emptying it now...")
+                self.empty_bucket(bucket_name)
+                self.rich_logger.info(f"Finished emptying bucket {bucket_name}. Attempting to delete again...")
+                try:
+                    response = client.delete_bucket(Bucket=bucket_name)
+                    return response
+                except client.exceptions.ClientError as err:
+                    self.rich_logger.error(f"Error deleting bucket {bucket_name}: {err}")
+            else:
+                self.rich_logger.error(f"Error deleting bucket {bucket_name}: {err}")
+        return None
+
+    def empty_bucket(self, bucket_name: str):
+        """Empty a specific S3 bucket"""
+        paginator = client.get_paginator('list_object_versions')
+        for page in paginator.paginate(Bucket=bucket_name):
+            versions = page.get('Versions', []) + page.get('DeleteMarkers', [])
+            for version in versions:
+                client.delete_object(Bucket=bucket_name, Key=version['Key'], VersionId=version['VersionId'])
 
     def action_select_cursor(self) -> None:
         """Event handler for selecting an item"""
@@ -112,9 +119,9 @@ class S3App(App): # type: ignore
         selected_item = list_view.index
         if selected_item is not None:
             selected_bucket = list_view.children[selected_item].children[0].render()
-            self.log_to_rich(f"Selected bucket: {selected_bucket}", level="info")
+            self.rich_logger.info(f"Selected bucket: {selected_bucket}")
         else:
-            self.log_to_rich("No bucket selected", level="error")
+            self.rich_logger.error("No bucket selected")
 
     def action_delete_bucket(self) -> None:
         """Delete the selected bucket"""
@@ -122,40 +129,29 @@ class S3App(App): # type: ignore
         selected_item = list_view.index
         if selected_item is not None:
             self.selected_bucket = list_view.children[selected_item].children[0].render()
-            self.log_to_rich(f"Attempting to delete bucket: {self.selected_bucket}", level="info")
+            self.rich_logger.info(f"Attempting to delete bucket: {self.selected_bucket}")
             self.mount(Input(name="confirm_delete", id="terminal", classes="box"))
             self.set_focus(self.query_one(Input))
             self.query_one(Input).value = ""
             self.query_one(Input).placeholder = "Type 'y' to confirm deletion"
         else:
-            self.log_to_rich("No bucket selected", level="error")
-
+            self.rich_logger.error("No bucket selected")
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
         """Handle the input confirmation for deletion"""
         if message.input.name == "confirm_delete":
             confirm_input = self.query_one(Input)
             if confirm_input.value.lower() == "y":
-                s3_manager = S3Manager()
-                response = s3_manager.delete_bucket(str(self.selected_bucket))
+                response = self.delete_bucket(str(self.selected_bucket))
                 if response is not None:
-                    self.log_to_rich(f"Deleted bucket: {self.selected_bucket}", level="info")
+                    self.rich_logger.info(f"Deleted bucket: {self.selected_bucket}")
                     self.list_buckets()
                 else:
-                    self.log_to_rich(f"Failed to delete bucket: {self.selected_bucket}", level="error")
+                    self.rich_logger.error(f"Failed to delete bucket: {self.selected_bucket}")
             else:
-                self.log_to_rich("Deletion canceled", level="info")
+                self.rich_logger.info("Deletion canceled")
             await confirm_input.remove()
             self.set_focus(self.query_one(ListView))
 
-    def log_to_rich(self, message: str, level: str = "info"):
-        """Log messages to the RichLog widget"""
-        rich_log = self.query_one(RichLog)
-        if level == "info":
-            rich_log.write(f"[INFO] {message}")
-        elif level == "error":
-            rich_log.write(f"[ERROR] {message}")
-        elif level == "warning":
-            rich_log.write(f"[WARNING] {message}")
-        else:
-            rich_log.write(f"[LOG] {message}")
+if __name__ == "__main__":
+    S3App().run()
