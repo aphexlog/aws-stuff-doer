@@ -4,10 +4,10 @@ import logging
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 
-from textual import on
+# from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog
+from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog, SelectionList, OptionList
 
 # Configure logging
 logging.basicConfig(
@@ -72,7 +72,11 @@ class S3App(App): # type: ignore
             buckets = response.get("Buckets", [])
             for bucket in buckets:
                 bucket_name = bucket.get("Name", "")
-                list_item = ListItem(Label(bucket_name))
+                bucket_date = bucket.get("CreationDate", "")
+                list_item = ListItem(
+                    Label(f"{bucket_name} - {bucket_date}", classes="bucket-info"),
+                    classes="bucket-item",
+                )
                 list_view.append(list_item)
         except client.exceptions.ClientError as err:
             self.rich_logger.error(f"Error listing buckets: {err}")
