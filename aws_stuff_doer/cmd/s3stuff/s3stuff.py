@@ -118,7 +118,7 @@ class S3App(App): # type: ignore
         list_view = self.query_one(ListView)
         selected_item = list_view.index
         if selected_item is not None:
-            selected_bucket = list_view.children[selected_item].children[0].render()
+            selected_bucket = list_view.children[selected_item].children[0].render().split(" ")[0]
             self.rich_logger.info(f"Selected bucket: {selected_bucket}")
         else:
             self.rich_logger.error("No bucket selected")
@@ -128,11 +128,10 @@ class S3App(App): # type: ignore
         list_view = self.query_one(ListView)
         selected_item = list_view.index
         if selected_item is not None:
-            selected_text = list_view.children[selected_item].children[0].render()
-            if isinstance(selected_text, str):
-                self.selected_bucket: str = selected_text.split(" ")[0]
-            else:
-                self.rich_logger.error("Failed to retrieve bucket name")
+            selected_text = str(list_view.children[selected_item].children[0].render())
+            # selected_bucket = selected_text.split("(")[0]
+            self.rich_logger.info(f"Selected text: {selected_text}")
+            self.selected_bucket: str = selected_text.split(" ")[0]
             self.rich_logger.info(f"Attempting to delete bucket: {self.selected_bucket}")
             self.mount(Input(name="confirm_delete", id="terminal", classes="box"))
             self.set_focus(self.query_one(Input))
