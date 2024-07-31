@@ -7,9 +7,8 @@ from mypy_boto3_s3.type_defs import ListObjectsV2OutputTypeDef
 # from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog, SelectionList, OptionList
+from textual.widgets import Header, Footer, ListItem, ListView, Label, Input, RichLog
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -73,10 +72,7 @@ class S3App(App): # type: ignore
             for bucket in buckets:
                 bucket_name = bucket.get("Name", "")
                 bucket_date = bucket.get("CreationDate", "")
-                list_item = ListItem(
-                    Label(f"{bucket_name} - {bucket_date}", classes="bucket-info"),
-                    classes="bucket-item",
-                )
+                list_item = ListItem( Label(f"{bucket_name} ({bucket_date})"), classes="bucket-item")
                 list_view.append(list_item)
         except client.exceptions.ClientError as err:
             self.rich_logger.error(f"Error listing buckets: {err}")
@@ -132,7 +128,11 @@ class S3App(App): # type: ignore
         list_view = self.query_one(ListView)
         selected_item = list_view.index
         if selected_item is not None:
-            self.selected_bucket = list_view.children[selected_item].children[0].render()
+            selected_text = list_view.children[selected_item].children[0].render()
+            if isinstance(selected_text, str):
+                self.selected_bucket: str = selected_text.split(" ")[0]
+            else:
+                self.rich_logger.error("Failed to retrieve bucket name")
             self.rich_logger.info(f"Attempting to delete bucket: {self.selected_bucket}")
             self.mount(Input(name="confirm_delete", id="terminal", classes="box"))
             self.set_focus(self.query_one(Input))
