@@ -3,6 +3,7 @@ import logging
 from .cmd.get_version import get_version
 from .cmd.login import AWSAuthenticator
 from .cmd.config import AWSConfigManager
+from .cmd.s3stuff import s3stuff
 
 def get_profiles():
     return AWSAuthenticator.list_profiles()
@@ -50,6 +51,11 @@ def main():
         action="store_true",
         help="Manage AWS SSO and AWS CLI profiles"
     )
+    parser.add_argument(
+        "--s3",
+        action="store_true",
+        help="Bucket operations"
+    )
 
     args = parser.parse_args()
 
@@ -91,6 +97,10 @@ def main():
 
         if not args.open and not args.open_sso:
             authenticator.authenticate_sso()
+
+    if args.s3:
+        ui = s3stuff.S3App()
+        ui.run()
 
 if __name__ == "__main__":
     main()
