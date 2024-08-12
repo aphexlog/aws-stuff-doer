@@ -1,5 +1,7 @@
 import argparse
 import logging
+
+from .cmd.cloudwatchLogs import cloudwatchLogs
 from .cmd.get_version import get_version
 from .cmd.login import AWSAuthenticator
 from .cmd.config import AWSConfigManager
@@ -56,6 +58,11 @@ def main():
         action="store_true",
         help="Bucket operations"
     )
+    parser.add_argument(
+        "--logs",
+        action="store_true",
+        help="Cloudwatch Logs operations"
+    )
 
     args = parser.parse_args()
 
@@ -100,6 +107,10 @@ def main():
 
     if args.s3:
         ui = s3stuff.S3App()
+        ui.run()
+
+    if args.logs:
+        ui = cloudwatchLogs.CloudwatchApp()
         ui.run()
 
 if __name__ == "__main__":
