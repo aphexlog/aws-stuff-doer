@@ -4,6 +4,7 @@ from .cmd.get_version import get_version
 from .cmd.login import AWSAuthenticator
 from .cmd.config import AWSConfigManager
 from .cmd.s3stuff import s3stuff
+from botocore.exceptions import ProfileNotFound
 
 def get_profiles():
     return AWSAuthenticator.list_profiles()
@@ -87,16 +88,24 @@ def main():
         return
 
     if args.profile:
-        authenticator = AWSAuthenticator(args.profile)
+        try:
+            authenticator = AWSAuthenticator(args.profile)
 
-        if args.open:
-            authenticator.open_aws_account_console()
+            if args.open:
+                authenticator.open_aws_account_console()
 
-        if args.open_sso:
-            authenticator.open_aws_sso_console()
+            if args.open_sso:
+                authenticator.open_aws_sso_console()
 
-        if not args.open and not args.open_sso:
-            authenticator.authenticate_sso()
+            if not args.open and not args.open_sso:
+                authenticator.authenticate_sso()
+
+        except ProfileNotFound as err:
+            logging.error(f"Profile not found: {err}")
+            return
+        except Exception as err:
+            logging.error(f"Failed to authenticate: {err}")
+            return
 
     if args.s3:
         ui = s3stuff.S3App()
