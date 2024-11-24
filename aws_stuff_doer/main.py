@@ -1,4 +1,5 @@
 import argparse
+import typer
 import logging
 from .cmd.get_version import get_version
 from .cmd.login import AWSAuthenticator
@@ -6,8 +7,12 @@ from .cmd.config import AWSConfigManager
 from .cmd.s3stuff import s3stuff
 from botocore.exceptions import ProfileNotFound
 
+app = typer.Typer()
+
+
 def get_profiles():
     return AWSAuthenticator.list_profiles()
+
 
 PROFILES: list[str] = get_profiles()
 
@@ -19,44 +24,26 @@ logging.basicConfig(
 
 logging.getLogger("botocore").setLevel(logging.ERROR)
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles"
     )
+    parser.add_argument("-p", "--profile", help="AWS profile name")
     parser.add_argument(
-        "-p", "--profile",
-        help="AWS profile name"
+        "--open-sso", action="store_true", help="Open AWS SSO user console"
+    )
+    parser.add_argument("--open", action="store_true", help="Open AWS account console")
+    parser.add_argument(
+        "-l", "--list", action="store_true", help="List available profiles"
     )
     parser.add_argument(
-        "--open-sso",
-        action="store_true",
-        help="Open AWS SSO user console"
+        "--version", action="version", version=f"%(prog)s {get_version()}"
     )
     parser.add_argument(
-        "--open",
-        action="store_true",
-        help="Open AWS account console"
+        "--config", action="store_true", help="Manage AWS SSO and AWS CLI profiles"
     )
-    parser.add_argument(
-        "-l", "--list",
-        action="store_true",
-        help="List available profiles"
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"%(prog)s {get_version()}"
-    )
-    parser.add_argument(
-        "--config",
-        action="store_true",
-        help="Manage AWS SSO and AWS CLI profiles"
-    )
-    parser.add_argument(
-        "--s3",
-        action="store_true",
-        help="Bucket operations"
-    )
+    parser.add_argument("--s3", action="store_true", help="Bucket operations")
 
     args = parser.parse_args()
 
@@ -110,6 +97,7 @@ def main():
     if args.s3:
         ui = s3stuff.S3App()
         ui.run()
+
 
 if __name__ == "__main__":
     main()
