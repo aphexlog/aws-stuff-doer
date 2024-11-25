@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-    build:
+    release:
         runs-on: ubuntu-latest
         steps:
         - uses: actions/checkout@v2
@@ -17,3 +17,22 @@ jobs:
             release_name: ${{ github.ref }} # Simply using the ref as the release name
             draft: true
             prerelease: false
+
+    publish-pypi:
+        needs: release
+        runs-on: ubuntu-latest
+        steps:
+        - name: publish-pypi
+          uses: actions/checkout@v2
+          with:
+            ref: ${{ github.ref }}
+        - name: Setup Python
+          uses: actions/setup-python@v2
+          with:
+          python-version: '3.x'
+        - name: Build and publish to pypi
+          uses: JRubics/poetry-publish@v2.0
+          with:
+            pypi_token: ${{ secrets.PYPI_API_TOKEN }}
+
+
