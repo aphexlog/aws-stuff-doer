@@ -84,14 +84,21 @@ def s3_operations():
     ui.run()
 
 
-@app.command(name="version")
-def show_version():
-    """Show the version of the CLI"""
-    typer.echo(f"aws-stuff-doer {get_version()}")
-
-
-@app.callback()
-def main():
+@app.callback(invoke_without_command=True)
+def main(
+    version: bool = typer.Option(
+        False, "-v", "--version", help="Show version and exit", is_eager=True
+    ),
+    ctx: typer.Context = typer.Option(None),
+):
     """Main callback to handle logging setup"""
+    if version:
+        typer.echo(f"aws-stuff-doer {get_version()}")
+        raise typer.Exit()
+    if not ctx.invoked_subcommand:
+        typer.echo(
+            "Welcome to ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles"
+        )
+        typer.echo("Use --help to see available commands.")
+        raise typer.Exit()
     setup_logging()
-    typer.Option(None, "--version", callback=get_version, is_eager=True)

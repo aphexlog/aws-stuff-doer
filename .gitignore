@@ -165,3 +165,4 @@ cdk.out/
 
 # "throw-away" code
 .tmp/
+.aider*
