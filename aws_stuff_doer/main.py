@@ -91,7 +91,7 @@ def main(
     """Main callback to handle version and logging setup"""
     if version:
         typer.echo(f"aws-stuff-doer {get_version()}")
-        # raise typer.Exit()
+        raise typer.Exit()
     setup_logging()
 
 
