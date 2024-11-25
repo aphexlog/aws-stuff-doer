@@ -24,7 +24,7 @@ mypy-boto3-s3 = "^1.34.120"
 textual = "^0.71.0"
 
 [tool.poetry.scripts]
-asd = "aws_stuff_doer.main:main"
+asd = "aws_stuff_doer.main:app"
 
 [build-system]
 requires = ["poetry-core"]
