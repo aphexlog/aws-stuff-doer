@@ -9,7 +9,9 @@ from .cmd.login import AWSAuthenticator
 from .cmd.s3stuff import s3stuff
 
 app = typer.Typer(
-    help="ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles"
+    help="ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles",
+    invoke_without_command=True,
+    no_args_is_help=True,
 )
 
 
@@ -94,11 +96,5 @@ def main(
     """Main callback to handle logging setup"""
     if version:
         typer.echo(f"aws-stuff-doer {get_version()}")
-        raise typer.Exit()
-    if not ctx.invoked_subcommand:
-        typer.echo(
-            "Welcome to ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles"
-        )
-        typer.echo("Use --help to see available commands.")
         raise typer.Exit()
     setup_logging()
