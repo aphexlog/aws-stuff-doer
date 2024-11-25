@@ -84,15 +84,14 @@ def s3_operations():
     ui.run()
 
 
-# @app.command(name="version")
-# def show_version():
-#     """Show the version of the CLI"""
-#     typer.echo(f"aws-stuff-doer {get_version()}")
+@app.command(name="version")
+def show_version():
+    """Show the version of the CLI"""
+    typer.echo(f"aws-stuff-doer {get_version()}")
 
 
 @app.callback()
 def main():
     """Main callback to handle logging setup"""
     setup_logging()
-    # typer.options.show_default = True
-    typer.option(..., "--version", callback=get_version, is_eager=True)
+    typer.Option(None, "--version", callback=get_version, is_eager=True)
