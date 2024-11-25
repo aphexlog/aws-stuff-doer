@@ -1,4 +1,4 @@
-name: Create Tag on Version Change
+name: Tag, Release and Publish package on push to main
 
 on:
   push:
@@ -46,3 +46,36 @@ jobs:
           git tag -l | grep -q "^v${{ env.VERSION }}$" && exit 0 || echo "Creating new tag"
           git tag -a v${{ env.VERSION }} -m "v${{ env.VERSION }} - ${{ github.event.head_commit.message }}"
           git push https://${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }} v${{ env.VERSION }}
+
+  release:
+    needs: tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }} # Simply using the ref as the release name
+          draft: true
+          prerelease: false
+
+  publish-pypi:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: publish-pypi
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Build and publish to pypi
+        uses: JRubics/poetry-publish@v2.0
+        with:
+          pypi_token: ${{ secrets.PYPI_API_TOKEN }}
+
