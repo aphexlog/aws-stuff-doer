@@ -44,7 +44,10 @@ class AWSConfigManager:
         sso_session = input("Enter SSO session name: ")
         sso_start_url = input("Enter SSO start URL: ")
         sso_region = input("Enter SSO region: ")
-        sso_registration_scopes = input("Enter SSO registration scopes (default: sso:account:access): ") or "sso:account:access"
+        sso_registration_scopes = (
+            input("Enter SSO registration scopes (default: sso:account:access): ")
+            or "sso:account:access"
+        )
 
         self.config[f"sso-session {sso_session}"] = {
             "sso_start_url": sso_start_url,

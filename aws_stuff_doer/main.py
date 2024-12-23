@@ -2,11 +2,21 @@ import logging
 
 import typer
 from botocore.exceptions import ProfileNotFound
+import pkg_resources
 
 from .cmd.config import AWSConfigManager
-from .cmd.get_version import get_version
-from .cmd.login import AWSAuthenticator
+from .cmd.aws_auth import AWSAuthenticator
 from .cmd.s3stuff import s3stuff
+
+
+def get_version():
+    package_name = "aws-stuff-doer"
+
+    try:
+        return pkg_resources.get_distribution(package_name).version
+    except pkg_resources.DistributionNotFound:
+        return "unknown"
+
 
 app = typer.Typer(
     help="ASD: An AWS Utility to help manage AWS SSO and AWS CLI profiles",
@@ -34,22 +44,24 @@ def list_profiles():
 
 
 @app.command(name="config")
-def configure():
+def configure(
+    sso: bool = typer.Option(False, help="Configure AWS SSO profile"),
+    session: bool = typer.Option(False, help="Initialize AWS SSO session"),
+    fmt: bool = typer.Option(False, help="Reformat AWS CLI configuration file"),
+):
     """Manage AWS SSO and AWS CLI profiles"""
     configurator = AWSConfigManager()
-    print("AWS SSO and CLI Profile Configuration")
-    print("1. Set up AWS SSO Profile")
-    print("2. Initialize AWS SSO Session")
-    print("3. Reformat AWS CLI Configuration File")
 
-    choice = input("Enter choice: ")
-
-    if choice == "1":
+    if sso:
         configurator.configure_sso()
-    elif choice == "2":
+    elif session:
         configurator.configure_session()
-    elif choice == "3":
+    elif fmt:
         configurator.fmt()
+    else:
+        typer.echo("Please provide a valid option")
+        typer.echo("Run 'asd config --help' for more information")
+        raise typer.Exit(1)
 
 
 @app.command(name="auth")
