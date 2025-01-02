@@ -48,6 +48,7 @@ def configure(
     sso: bool = typer.Option(False, help="Configure AWS SSO profile"),
     session: bool = typer.Option(False, help="Initialize AWS SSO session"),
     fmt: bool = typer.Option(False, help="Reformat AWS CLI configuration file"),
+    editor: str = typer.Option("vim", help="Editor to open the config file"),
 ):
     """Manage AWS SSO and AWS CLI profiles"""
     configurator = AWSConfigManager()
@@ -58,6 +59,9 @@ def configure(
         configurator.configure_session()
     elif fmt:
         configurator.fmt()
+    if not any([sso, session, fmt]):
+        # open config witch vim by default if none provided or any other editor
+        configurator.open_config_file(editor)
     else:
         typer.echo("Please provide a valid option")
         typer.echo("Run 'asd config --help' for more information")

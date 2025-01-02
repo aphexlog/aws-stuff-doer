@@ -4,6 +4,8 @@ import boto3
 from mypy_boto3_sts import STSClient
 import logging
 
+# open config with vim or other prefered text editor if no flag is passed
+
 client: STSClient = boto3.client("sts")  # type: ignore
 
 logging.basicConfig(
@@ -83,3 +85,9 @@ class AWSConfigManager:
         with open(self.config_path, "w") as configfile:
             self.config.write(configfile)
         logging.info("Config file formatted successfully")
+
+    def open_config_file(self, editor: str):
+        """Open the config file with the specified editor"""
+        import subprocess
+
+        subprocess.run([editor, self.config_path])

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aws-stuff-doer"
-version = "0.2.1"
+version = "0.2.2"
 description = "ASD is a utility to help manage your AWS projects and sso sessions."
 authors = [
     "Aaron West <aphexlog@gmail.com>",
@@ -22,6 +22,7 @@ lark = "^1.1.9"
 mypy-boto3-sts = "^1.34.0"
 mypy-boto3-s3 = "^1.34.120"
 textual = "^0.71.0"
+typer = "^0.15.1"
 
 [tool.poetry.scripts]
 asd = "aws_stuff_doer.main:app"
