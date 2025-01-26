@@ -1,6 +1,8 @@
 import logging
+from typing import Optional
 
 import typer
+import boto3
 from botocore.exceptions import ProfileNotFound
 import pkg_resources
 
@@ -74,16 +76,20 @@ def authenticate(
     open_sso: bool = typer.Option(
         False, "--open-sso", help="Open AWS SSO user console"
     ),
-    open_console: bool = typer.Option(False, "--open", help="Open AWS account console"),
+    open: bool = typer.Option(False, "--open", help="Open AWS console"),
+    service: Optional[str] = typer.Argument(None, help="Service to open in console"),
 ):
     """Authenticate with AWS SSO or open consoles"""
     try:
         authenticator = AWSAuthenticator(profile)
 
-        if open_console:
-            authenticator.open_aws_account_console()
-        elif open_sso:
+        if open_sso:
             authenticator.open_aws_sso_console()
+        elif open:
+            if service:  # service name was provided
+                authenticator.open_aws_service_console(service)
+            else:  # no service name, just open main console
+                authenticator.open_aws_account_console()
         else:
             authenticator.authenticate_sso()
 
@@ -100,6 +106,31 @@ def s3_operations():
     """Perform S3 bucket operations"""
     ui = s3stuff.S3App()
     ui.run()
+
+
+@app.command(name="services")
+def list_services(
+    all: bool = typer.Option(False, "-a", "--all", help="Show all available AWS services")
+):
+    """List AWS services. By default shows only configured services."""
+    # Get our mappings
+    console_paths = AWSAuthenticator.CONSOLE_PATHS
+    
+    print("Available AWS services:")
+    print("\nConfigured Services (with console paths):")
+    for service in sorted(console_paths.keys()):
+        path = console_paths[service]
+        # Only show services with simple paths (no # or complex routing)
+        if '#' not in path and '/' not in path:
+            print(f"  {service} -> {path}")
+    
+    if all:
+        # Get list of valid services from boto3
+        valid_services = boto3.Session().get_available_services()
+        print("\nAll Available Services:")
+        for service in sorted(valid_services):
+            if service not in console_paths:
+                print(f"  {service} (console path not configured)")
 
 
 @app.callback(invoke_without_command=True)

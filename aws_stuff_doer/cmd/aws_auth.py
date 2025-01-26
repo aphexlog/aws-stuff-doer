@@ -1,7 +1,7 @@
 import os
 import shutil
 import platform
-from typing import Optional
+from typing import Optional, Dict
 import subprocess
 from pathlib import Path
 import boto3
@@ -70,23 +70,57 @@ class AWSAuthenticator:
 
             if os_name == "Darwin":
                 # Download the AWS CLI package into the temporary directory
-                subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.pkg", "-o", "./tmp_aws_cli/AWSCLIV2.pkg"])
+                subprocess.run(
+                    [
+                        "curl",
+                        "https://awscli.amazonaws.com/AWSCLIV2.pkg",
+                        "-o",
+                        "./tmp_aws_cli/AWSCLIV2.pkg",
+                    ]
+                )
 
                 # Install AWS CLI
-                subprocess.run(["sudo", "installer", "-pkg", "./tmp_aws_cli/AWSCLIV2.pkg", "-target", "/"])
+                subprocess.run(
+                    [
+                        "sudo",
+                        "installer",
+                        "-pkg",
+                        "./tmp_aws_cli/AWSCLIV2.pkg",
+                        "-target",
+                        "/",
+                    ]
+                )
             elif os_name == "Linux":
                 # Download the AWS CLI package into the temporary directory
-                subprocess.run(["curl", "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip", "-o", "./tmp_aws_cli/awscliv2.zip"])
+                subprocess.run(
+                    [
+                        "curl",
+                        "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip",
+                        "-o",
+                        "./tmp_aws_cli/awscliv2.zip",
+                    ]
+                )
 
                 # Install AWS CLI
-                subprocess.run(["unzip", "./tmp_aws_cli/awscliv2.zip", "-d", "./tmp_aws_cli"])
+                subprocess.run(
+                    ["unzip", "./tmp_aws_cli/awscliv2.zip", "-d", "./tmp_aws_cli"]
+                )
                 subprocess.run(["sudo", "./tmp_aws_cli/aws/install"])
             elif os_name == "Windows":
                 # Download the AWS CLI package into the temporary directory
-                subprocess.run(["curl", "https://awscli.amazonaws.com/AWSCLIV2.msi", "-o", "./tmp_aws_cli/AWSCLIV2.msi"])
+                subprocess.run(
+                    [
+                        "curl",
+                        "https://awscli.amazonaws.com/AWSCLIV2.msi",
+                        "-o",
+                        "./tmp_aws_cli/AWSCLIV2.msi",
+                    ]
+                )
 
                 # Install AWS CLI
-                subprocess.run(["msiexec", "/i", "./tmp_aws_cli/AWSCLIV2.msi", "/quiet"])
+                subprocess.run(
+                    ["msiexec", "/i", "./tmp_aws_cli/AWSCLIV2.msi", "/quiet"]
+                )
             else:
                 logging.error(f"Unsupported OS: {os_name}")
 
@@ -101,7 +135,9 @@ class AWSAuthenticator:
             config.read(self.config_path)
             try:
                 sso_session = config.get(f"profile {self.profile}", "sso_session")
-                sso_start_url = config.get(f"sso-session {sso_session}", "sso_start_url")
+                sso_start_url = config.get(
+                    f"sso-session {sso_session}", "sso_start_url"
+                )
                 return sso_start_url
             except configparser.NoSectionError:
                 logging.error("Could not find the necessary SSO configuration.")
@@ -144,7 +180,9 @@ class AWSAuthenticator:
             with open(self.credentials_path, "w") as f:
                 config.write(f)
 
-            logging.info("Temporary AWS credentials written to the default profile in ~/.aws/credentials")
+            logging.info(
+                "Temporary AWS credentials written to the default profile in ~/.aws/credentials"
+            )
             return True
         except Exception as err:
             logging.error(f"Failed to export temporary AWS credentials: {err}")
@@ -167,6 +205,63 @@ class AWSAuthenticator:
                 subprocess.run(["open", account_url])
         except Exception as err:
             logging.error(f"Failed to open the AWS Management Console: {err}")
+
+    # Mapping of service names to their console URL paths
+    CONSOLE_PATHS: Dict[str, str] = {
+        "stepfunctions": "states",
+        "states": "states",
+        "secretsmanager": "secretsmanager",
+        "lambda": "lambda",
+        "ecr": "ecr",
+        "eks": "eks",
+        "cloudwatch": "cloudwatch",
+        "cloudformation": "cloudformation",
+        "ec2": "ec2",
+        "iam": "iamv2",
+        "rds": "rds",
+        "s3": "s3",
+        "sqs": "sqs",
+        "sagemaker": "sagemaker",
+    }
+
+    def get_valid_service_name(self, service: str) -> Optional[str]:
+        """Convert service name to valid AWS service identifier."""
+        service = service.lower().strip().replace(" ", "-")
+
+        # Check if it's in our console paths mapping
+        if service in self.CONSOLE_PATHS:
+            return service
+
+        # Get list of valid services from boto3
+        valid_services = boto3.Session().get_available_services()
+
+        # Return service name if valid
+        if service in valid_services:
+            return service
+
+        logging.error(f"Invalid service name: {service}")
+        return None
+
+    def open_aws_service_console(self, service: str) -> None:
+        """Open a specific AWS service console in the default web browser."""
+        try:
+            # Get validated service name
+            valid_service = self.get_valid_service_name(service)
+            if not valid_service:
+                return
+
+            # Get the console path for the service
+            console_path = self.CONSOLE_PATHS.get(valid_service, valid_service)
+
+            # Use direct AWS console URL format
+            service_url = f"https://us-east-1.console.aws.amazon.com/{console_path}"
+
+            subprocess.run(["open", service_url])
+            logging.info(f"Opening console for service: {valid_service}")
+        except Exception as err:
+            logging.error(
+                f"Failed to open the AWS service console for {service}: {err}"
+            )
 
     @classmethod
     def list_profiles(cls) -> list[str]:
