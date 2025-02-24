@@ -73,31 +73,53 @@ def configure(
 @app.command(name="auth")
 def authenticate(
     profile: str = typer.Option(..., "-p", "--profile", help="AWS profile name"),
-    open_sso: bool = typer.Option(
-        False, "--open-sso", help="Open AWS SSO user console"
-    ),
-    open: bool = typer.Option(False, "--open", help="Open AWS console"),
-    service: Optional[str] = typer.Argument(None, help="Service to open in console"),
 ):
-    """Authenticate with AWS SSO or open consoles"""
+    """Authenticate with AWS SSO"""
     try:
         authenticator = AWSAuthenticator(profile)
-
-        if open_sso:
-            authenticator.open_aws_sso_console()
-        elif open:
-            if service:  # service name was provided
-                authenticator.open_aws_service_console(service)
-            else:  # no service name, just open main console
-                authenticator.open_aws_account_console()
-        else:
-            authenticator.authenticate_sso()
-
+        authenticator.authenticate_sso()
     except ProfileNotFound as err:
         logging.error(f"Profile not found: {err}")
         raise typer.Exit(1)
     except Exception as err:
         logging.error(f"Failed to authenticate: {err}")
+        raise typer.Exit(1)
+
+open_app = typer.Typer(help="Open AWS Console interfaces")
+app.add_typer(open_app, name="open")
+
+@open_app.command(name="sso")
+def open_sso():
+    """Open AWS SSO user console"""
+    try:
+        # Use default profile if exists, or ask user to specify
+        profiles = AWSAuthenticator.list_profiles()
+        profile = profiles[0] if profiles else typer.prompt("Enter AWS profile name")
+        authenticator = AWSAuthenticator(profile)
+        authenticator.open_aws_sso_console()
+    except Exception as err:
+        logging.error(f"Failed to open SSO console: {err}")
+        raise typer.Exit(1)
+
+@open_app.command(name="console")
+def open_console(
+    service: Optional[str] = typer.Argument(None, help="Service to open in console"),
+    profile: Optional[str] = typer.Option(None, "-p", "--profile", help="AWS profile name"),
+):
+    """Open AWS Console or specific service console"""
+    try:
+        # Use default profile if exists, or ask user to specify
+        if not profile:
+            profiles = AWSAuthenticator.list_profiles()
+            profile = profiles[0] if profiles else typer.prompt("Enter AWS profile name")
+        
+        authenticator = AWSAuthenticator(profile)
+        if service:
+            authenticator.open_aws_service_console(service)
+        else:
+            authenticator.open_aws_account_console()
+    except Exception as err:
+        logging.error(f"Failed to open console: {err}")
         raise typer.Exit(1)
 
 
