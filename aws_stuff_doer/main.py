@@ -85,8 +85,10 @@ def authenticate(
         logging.error(f"Failed to authenticate: {err}")
         raise typer.Exit(1)
 
+
 open_app = typer.Typer(help="Open AWS Console interfaces")
 app.add_typer(open_app, name="open")
+
 
 @open_app.command(name="sso")
 def open_sso():
@@ -101,18 +103,23 @@ def open_sso():
         logging.error(f"Failed to open SSO console: {err}")
         raise typer.Exit(1)
 
+
 @open_app.command(name="console")
 def open_console(
     service: Optional[str] = typer.Argument(None, help="Service to open in console"),
-    profile: Optional[str] = typer.Option(None, "-p", "--profile", help="AWS profile name"),
+    profile: Optional[str] = typer.Option(
+        None, "-p", "--profile", help="AWS profile name"
+    ),
 ):
     """Open AWS Console or specific service console"""
     try:
         # Use default profile if exists, or ask user to specify
         if not profile:
             profiles = AWSAuthenticator.list_profiles()
-            profile = profiles[0] if profiles else typer.prompt("Enter AWS profile name")
-        
+            profile = (
+                profiles[0] if profiles else typer.prompt("Enter AWS profile name")
+            )
+
         authenticator = AWSAuthenticator(profile)
         if service:
             authenticator.open_aws_service_console(service)
@@ -130,22 +137,24 @@ def s3_operations():
     ui.run()
 
 
-@app.command(name="services")
+@app.command(name="list-services")
 def list_services(
-    all: bool = typer.Option(False, "-a", "--all", help="Show all available AWS services")
+    all: bool = typer.Option(
+        False, "-a", "--all", help="Show all available AWS services"
+    ),
 ):
     """List AWS services. By default shows only configured services."""
     # Get our mappings
     console_paths = AWSAuthenticator.CONSOLE_PATHS
-    
+
     print("Available AWS services:")
     print("\nConfigured Services (with console paths):")
     for service in sorted(console_paths.keys()):
         path = console_paths[service]
         # Only show services with simple paths (no # or complex routing)
-        if '#' not in path and '/' not in path:
+        if "#" not in path and "/" not in path:
             print(f"  {service} -> {path}")
-    
+
     if all:
         # Get list of valid services from boto3
         valid_services = boto3.Session().get_available_services()
